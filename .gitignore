@@ -1,0 +1,40 @@
+# Build
+build/
+.gradle/
+*.apk
+*.aab
+*.dex
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# iOS
+xcuserdata/
+*.xcworkspace/
+DerivedData/
+
+# Android
+local.properties
+*.keystore
+*.jks
+
+# Web
+*.zip
