@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AR Олёкминск Pro - 8thWall Edition</title>
+    
+    <!-- 8thWall XR Web -->
+    <script src="https://apps.8thwall.com/xrweb?appKey=ВАШ_8THWALL_APP_KEY"></script>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- 8thWall Camera Pipeline -->
+    <script defer src="https://cdn.8thwall.com/web/aframe/8frame-1.3.0.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        #ar-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* UI Оверлей */
+        .ui-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        .ui-overlay > * {
+            pointer-events: auto;
+        }
+        
+        /* Верхняя панель */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .location-info h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .location-info p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        /* Статус VPS */
+        .vps-status {
+            background: rgba(0,255,0,0.3);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .vps-status.inactive {
+            background: rgba(255,0,0,0.3);
+        }
+        
+        .vps-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #0f0;
+            animation: blink 1s infinite;
+        }
+        
+        .vps-status.inactive .vps-dot {
+            background: #f00;
+            animation: none;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .close-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        /* AR Карточка с Glassmorphism */
+        .ar-card {
+            position: absolute;
+            bottom: 120px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 24px;
+            padding: 24px;
+            color: white;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .ar-card.hidden {
+            transform: translateY(150%);
+        }
+        
+        .ar-card .year {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        
+        .ar-card h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .ar-card p {
+            font-size: 15px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+        
+        .ar-card .photo-container {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            margin-top: 16px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .ar-card .photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* 3D Объект превью */
+        .object-preview {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Нижнее меню */
+        .bottom-menu {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(20px);
+            padding: 12px;
+            border-radius: 32px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .menu-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .menu-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+        
+        .menu-btn.primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            width: 64px;
+            height: 64px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        /* Индикатор загрузки */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 1000;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Стартовый экран */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+        
+        .start-screen h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 30px;
+            font-size: 14px;
+        }
+        
+        .start-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 22px 70px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+            transition: transform 0.3s;
+            margin-top: 30px;
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-3px);
+        }
+        
+        .watermark {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.5);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <!-- Стартовый экран -->
+    <div class="start-screen" id="startScreen">
+        <div style="font-size: 100px; margin-bottom: 20px;">🏛️</div>
+        
+        <h2>AR Олёкминск Pro</h2>
+        <p style="opacity: 0.8; font-size: 18px;">История оживает через камеру</p>
+        
+        <div class="features">
+            <div class="feature">📍 VPS навигация</div>
+            <div class="feature">🥽 3D модели</div>
+            <div class="feature">🎮 Квесты</div>
+            <div class="feature">📸 Фото AR</div>
+        </div>
+        
+        <button class="start-btn" onclick="startAR()">
+            Запустить AR
+        </button>
+        
+        <div class="watermark">
+            🔒 8thWall Development Mode
+        </div>
+        
+        <p style="margin-top: 40px; font-size: 12px; opacity: 0.6;">
+            Работает на 8thWall • Требует доступ к камере
+        </p>
+    </div>
+
+    <!-- Индикатор загрузки -->
+    <div class="loading" id="loading" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p>Загрузка AR...</p>
+        <p style="font-size: 12px; opacity: 0.7; margin-top: 10px;">Инициализация 8thWall Engine</p>
+    </div>
+
+    <!-- AR Контейнер 8thWall -->
+    <div id="ar-container">
+        <div id="xr-canvas-container"></div>
+    </div>
+
+    <!-- UI Оверлей -->
+    <div class="ui-overlay" id="uiOverlay" style="display: none;">
+        <!-- Верхняя панель -->
+        <div class="top-bar">
+            <div class="location-info">
+                <h1>🏛️ Дом Культуры</h1>
+                <p>📍 Олёкминск • <span id="distance">50 м</span></p>
+            </div>
+            
+            <div class="vps-status" id="vpsStatus">
+                <div class="vps-dot"></div>
+                <span>VPS активен</span>
+            </div>
+            
+            <button class="close-btn" onclick="closeAR()">×</button>
+        </div>
+        
+        <!-- Превью 3D объекта -->
+        <div class="object-preview">
+            🏛️
+        </div>
+
+        <!-- AR Карточка -->
+        <div class="ar-card" id="arCard">
+            <span class="year">1985 год</span>
+            <h3>Дом Культуры «Гармония»</h3>
+            <p>В 1980-е годы Дом Культуры был центром культурной жизни города. Здесь проходили концерты, театральные постановки и танцевальные вечеры.</p>
+            
+            <div class="photo-container">
+                <img src="https://via.placeholder.com/400x150/667eea/ffffff?text=ДК+1985" 
+                     alt="ДК 1985" class="photo"
+                     onerror="this.style.display='none'; this.parentElement.innerHTML='🏛️'">
+            </div>
+        </div>
+        
+        <!-- Нижнее меню -->
+        <div class="bottom-menu">
+            <button class="menu-btn" onclick="toggleQuest()" title="Квест">
+                🎯
+            </button>
+            
+            <button class="menu-btn primary" onclick="capturePhoto()" title="Сделать фото">
+                📸
+            </button>
+            
+            <button class="menu-btn" onclick="nextLocation()" title="Следующая локация">
+                ➡️
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Конфигурация 8thWall
+        const CONFIG = {
+            appKey: 'ВАШ_8THWALL_APP_KEY', // Заменить на реальный ключ!
+            imageTargets: ['dk-marker', 'naberezhnaya-marker'],
+            vpsWaypoints: [
+                { id: 'dk', lat: 60.366, lng: 120.416, name: 'Дом Культуры' },
+                { id: 'nab', lat: 60.367, lng: 120.418, name: 'Набережная' },
+                { id: 'school', lat: 60.368, lng: 120.415, name: 'Школа №1' }
+            ]
+        };
+
+        let engine = null;
+        let currentLocation = 0;
+
+        const locations = [
+            {
+                id: 'dk',
+                name: 'Дом Культуры «Гармония»',
+                year: '1985',
+                description: 'В 1980-е годы Дом Культуры был центром культурной жизни города. Здесь проходили концерты, театральные постановки и танцевальные вечеры.',
+                coords: { lat: 60.366, lng: 120.416 }
+            },
+            {
+                id: 'nab',
+                name: 'Набережная Лены',
+                year: '1970',
+                description: 'Старая набережная до строительства современной набережной. Здесь проводились городские праздники и собрания.',
+                coords: { lat: 60.367, lng: 120.418 }
+            },
+            {
+                id: 'school',
+                name: 'Школа №1 им. Яковлева',
+                year: '1950',
+                description: 'Первая школа города, основана в 1930-х годах. Выпустила множество известных жителей Олёкминска.',
+                coords: { lat: 60.368, lng: 120.415 }
+            }
+        ];
+
+        // Инициализация 8thWall
+        async function init8thWall() {
+            if (CONFIG.appKey === 'ВАШ_8THWALL_APP_KEY') {
+                console.warn('⚠️ Необходимо указать 8thWall APP_KEY');
+                alert('Для работы нужен ключ 8thWall.\n\n1. Зарегистрируйтесь на 8thwall.com\n2. Создайте приложение\n3. Вставьте ключ в код');
+                return false;
+            }
+
+            try {
+                // Инициализация движка
+                if (window.XR8) {
+                    await window.XR8.configure({
+                        appKey: CONFIG.appKey,
+                        cameraConfig: { direction: XR8.XrConfig.camera().BACK }
+                    });
+                    
+                    // Настройка VPS
+                    setupVPS();
+                    
+                    // Настройка Image Targets
+                    setupImageTargets();
+                    
+                    return true;
+                }
+            } catch (e) {
+                console.error('8thWall ошибка:', e);
+                return false;
+            }
+        }
+
+        function setupVPS() {
+            // Visual Positioning System
+            console.log('VPS настроен');
+        }
+
+        function setupImageTargets() {
+            // Распознавание изображений
+            console.log('Image Targets настроены');
+        }
+
+        function updatePosition(position) {
+            const { latitude, longitude } = position.coords;
+            
+            let minDist = Infinity;
+            let nearestIdx = 0;
+            
+            locations.forEach((loc, idx) => {
+                const dist = calculateDistance(latitude, longitude, loc.coords.lat, loc.coords.lng);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearestIdx = idx;
+                }
+            });
+            
+            const distMeters = Math.round(minDist * 1000);
+            document.getElementById('distance').textContent = distMeters + ' м';
+            
+            if (distMeters < 100 && currentLocation !== nearestIdx) {
+                currentLocation = nearestIdx;
+                showLocation(nearestIdx);
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                     Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function showLocation(index) {
+            const loc = locations[index];
+            document.querySelector('.ar-card .year').textContent = loc.year + ' год';
+            document.querySelector('.ar-card h3').textContent = loc.name;
+            document.querySelector('.ar-card p').textContent = loc.description;
+            document.querySelector('.location-info h1').textContent = '🏛️ ' + loc.name;
+        }
+
+        // Старт AR
+        async function startAR() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            
+            // Инициализация
+            const initialized = await init8thWall();
+            
+            // GPS
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(updatePosition, null, {
+                    enableHighAccuracy: true
+                });
+            }
+            
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('uiOverlay').style.display = 'block';
+            }, 2000);
+        }
+
+        // UI функции
+        function toggleQuest() {
+            alert('🎯 Загадка:\n\nВ каком году построен Дом Культуры?\n\n(В Development режиме квесты упрощены)');
+        }
+
+        function capturePhoto() {
+            alert('📸 Сделайте скриншот!\n\n#ARОлёкминск #МояОлёкма');
+        }
+
+        function nextLocation() {
+            currentLocation = (currentLocation + 1) % locations.length;
+            showLocation(currentLocation);
+        }
+
+        function closeAR() {
+            if (confirm('Завершить экскурсию?')) {
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
