@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Военно-тактический клуб «Арена» — Лазертаг в Олёкминске</title>
+    <title>Военно-тактический клуб «Арена» — Лазертаг и Страйкбол в Олёкминске</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
@@ -109,6 +109,206 @@
             background: var(--color-accent-hover);
             transform: translateY(-2px);
             box-shadow: var(--shadow-glow);
+        }
+
+        /* Game Tabs */
+        .game-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .game-tab {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 107, 53, 0.3);
+            color: var(--color-text);
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .game-tab:hover {
+            background: rgba(255, 107, 53, 0.1);
+            border-color: var(--color-accent);
+        }
+
+        .game-tab.active {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+            color: white;
+        }
+
+        .game-section {
+            display: none;
+        }
+
+        .game-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Booking Form */
+        .booking {
+            background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-primary) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .booking::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,107,53,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .booking-form {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            position: relative;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: var(--color-text);
+            font-size: 1rem;
+            font-family: 'Open Sans', sans-serif;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .game-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .game-option {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .game-option:hover {
+            border-color: rgba(255, 107, 53, 0.5);
+        }
+
+        .game-option.selected {
+            background: rgba(255, 107, 53, 0.15);
+            border-color: var(--color-accent);
+        }
+
+        .game-option-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .game-option h4 {
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .game-option p {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 1.2rem;
+            border-radius: 12px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .submit-btn:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .game-selector {
+                flex-direction: column;
+            }
+
+            .booking-form {
+                padding: 1.5rem;
+            }
         }
 
         /* Hero Section */
@@ -924,11 +1124,11 @@
             <div class="logo">АРЕНА <span>ARENA</span></div>
             <div style="color: var(--color-text-muted); font-size: 0.85rem; margin-left: 1rem;">Военно-тактический клуб</div>
             <nav>
+                <a href="#home">Главная</a>
                 <a href="#about">О нас</a>
-                <a href="#features">Преимущества</a>
                 <a href="#gallery">Галерея</a>
                 <a href="#arsenal">Арсенал</a>
-                <a href="#pricing">Цены</a>
+                <a href="#booking">Запись</a>
                 <a href="#contact">Контакты</a>
             </nav>
             <a href="tel:+79248752311" class="phone-btn">Позвонить</a>
@@ -937,11 +1137,17 @@
     </header>
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section class="hero" id="home">
         <div class="hero-content">
             <div class="hero-badge">🎯 Военно-тактический клуб «Арена»</div>
-            <h1>Военно-тактический клуб <span>«Арена»</span></h1>
-            <p>Лазертаг в Олёкминске! Присоединяйся к нашему сообществу — там вся актуальная информация о играх</p>
+            <h1>Лазертаг & Страйкбол <span>в Олёкминске</span></h1>
+            <p>Выбери свой формат игры! Лазертаг — безопасно для всей семьи. Страйкбол — для тех, кто ищет острые ощущения.</p>
+            
+            <div class="game-tabs">
+                <button class="game-tab active" data-game="lazertag">🔫 Лазертаг</button>
+                <button class="game-tab" data-game="strikeball">💥 Страйкбол</button>
+            </div>
+            
             <div class="hero-buttons">
                 <a href="https://t.me/+1daHjXRWXDQwMzJi" class="btn-primary" target="_blank">✈️ Telegram сообщество</a>
                 <a href="https://chat.whatsapp.com/JJnQteS094rIe3Rk2pNU14?mode=ac_c" class="btn-secondary" target="_blank">💬 WhatsApp группа</a>
@@ -965,6 +1171,9 @@
             </div>
         </div>
     </section>
+
+    <!-- Laser Tag Section -->
+    <div class="game-section active" id="lazertag-section">
 
     <!-- About Section -->
     <section class="about" id="about">
@@ -1262,6 +1471,243 @@
         </div>
     </section>
 
+    <!-- Strikeball Section -->
+    <div class="game-section" id="strikeball-section">
+        <!-- Strikeball About -->
+        <section class="about" id="about-strikeball">
+            <div class="container">
+                <div class="about-grid">
+                    <div class="about-image">
+                        <img src="images/strikeball-hero.jpg" alt="Страйкбол">
+                    </div>
+                    <div class="about-content">
+                        <span class="section-tag">О страйкболе</span>
+                        <h3>Настоящий боевой опыт</h3>
+                        <p>Страйкбол — это командная военно-тактическая игра с использованием пневматического оружия, стреляющего пластиковыми шариками. Ощути настоящий адреналин и командный дух боя!</p>
+                        <p>Мы организуем игры в живописном лесу Олёкминска. Экипировка предоставляется! Приходи с друзьями — устроим настоящее сражение.</p>
+                        <div class="about-stats">
+                            <div class="stat">
+                                <span class="stat-number">18+</span>
+                                <span class="stat-label">Лет игрокам</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">✓</span>
+                                <span class="stat-label">Экипировка</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">💥</span>
+                                <span class="stat-label">Реалистично</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strikeball Features -->
+        <section class="features" id="features-strikeball">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Почему страйкбол</span>
+                    <h2 class="section-title">Особенности игры</h2>
+                    <p class="section-subtitle">Максимальная реалистичность и острые ощущения</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎭</div>
+                        <h3>Экипировка included</h3>
+                        <p>Маска, жилет и оружие — всё предоставляем! Приходи в удобной одежде и готовься к бою.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🌲</div>
+                        <h3>Лесная локация</h3>
+                        <p>Играем в настоящем лесу с естественными укрытиями, пнями и деревьями. Никаких скучных залов!</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💥</div>
+                        <h3>Реалистичность</h3>
+                        <p>Взвешенное оружие, перезарядка, полёт шариков — полное погружение в атмосферу боя.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎮</div>
+                        <h3>Сценарии игр</h3>
+                        <p>Захват флага, командный бой, каждый сам за себя — выбирай свой режим!</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">👥</div>
+                        <h3>Любая компания</h3>
+                        <p>От 6 до 20+ человек. Идеально для корпоративов, тимбилдингов и активного отдыха.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>Лёгкая запись</h3>
+                        <p>Заполни форму ниже — мы свяжемся и подберём удобное время.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strikeball Gallery -->
+        <section class="gallery" id="gallery-strikeball">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Галерея</span>
+                    <h2 class="section-title">Фото со страйкбола</h2>
+                    <p class="section-subtitle">Атмосфера настоящего боя в лесу Олёкминска</p>
+                </div>
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <img src="images/game-1.jpg" alt="Игроки в страйкбол">
+                        <div class="gallery-overlay">
+                            <span>Тактические позиции</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/game-2.jpg" alt="Снайпер">
+                        <div class="gallery-overlay">
+                            <span>Снайперская работа</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/game-3.jpg" alt="Игрок в лесу">
+                        <div class="gallery-overlay">
+                            <span>Лесная локация</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="images/strikeball-hero.jpg" alt="Страйкбол">
+                        <div class="gallery-overlay">
+                            <span>Военная экипировка</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Strikeball Pricing -->
+        <section class="pricing" id="pricing-strikeball">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">Цены на страйкбол</span>
+                    <h2 class="section-title">Стоимость игры</h2>
+                    <p class="section-subtitle">Экипировка включена!</p>
+                </div>
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <h3>Базовый</h3>
+                        <div class="price">800₽ <span>/человек</span></div>
+                        <ul class="pricing-features">
+                            <li>⏱️ 2 часа игры</li>
+                            <li>🔫 Автомат + экипировка</li>
+                            <li>👥 От 6 человек</li>
+                            <li>📋 2-3 сценария</li>
+                        </ul>
+                        <a href="#booking" class="btn-secondary">Записаться</a>
+                    </div>
+                    <div class="pricing-card popular">
+                        <div class="popular-badge">Популярное</div>
+                        <h3>Стандарт</h3>
+                        <div class="price">1200₽ <span>/человек</span></div>
+                        <ul class="pricing-features">
+                            <li>⏱️ 3 часа игры</li>
+                            <li>🔫 Любое оружие + экипировка</li>
+                            <li>👥 От 6 человек</li>
+                            <li>📋 Все сценарии</li>
+                            <li>📸 Фото с игры</li>
+                        </ul>
+                        <a href="#booking" class="btn-primary">Записаться</a>
+                    </div>
+                    <div class="pricing-card">
+                        <h3>Баттл</h3>
+                        <div class="price">1500₽ <span>/человек</span></div>
+                        <ul class="pricing-features">
+                            <li>⏱️ 4 часа игры</li>
+                            <li>🔫 Любое оружие + экипировка</li>
+                            <li>👥 От 8 человек</li>
+                            <li>📋 Все сценарии</li>
+                            <li>📸 Фото и видео</li>
+                            <li>🏆 Турнирная таблица</li>
+                        </ul>
+                        <a href="#booking" class="btn-secondary">Записаться</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Booking Form Section -->
+    <section class="booking" id="booking">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Запись на игру</span>
+                <h2 class="section-title">Забронируй игру</h2>
+                <p class="section-subtitle">Заполни форму — мы получим заявку в WhatsApp и свяжемся с тобой!</p>
+            </div>
+            
+            <form class="booking-form" id="bookingForm">
+                <div class="game-selector">
+                    <div class="game-option selected" data-game="lazertag">
+                        <div class="game-option-icon">🔫</div>
+                        <h4>Лазертаг</h4>
+                        <p>9+ лет</p>
+                    </div>
+                    <div class="game-option" data-game="strikeball">
+                        <div class="game-option-icon">💥</div>
+                        <h4>Страйкбол</h4>
+                        <p>18+ лет</p>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Ваше имя *</label>
+                        <input type="text" id="name" name="name" placeholder="Иван" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Телефон *</label>
+                        <input type="tel" id="phone" name="phone" placeholder="+7 (___) ___-__-__" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="players">Количество игроков *</label>
+                        <select id="players" name="players" required>
+                            <option value="">Выберите</option>
+                            <option value="4-6">4-6 человек</option>
+                            <option value="7-10">7-10 человек</option>
+                            <option value="11-15">11-15 человек</option>
+                            <option value="16+">16+ человек</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tariff">Тариф *</label>
+                        <select id="tariff" name="tariff" required>
+                            <option value="">Выберите</option>
+                            <option value="Базовый">Базовый</option>
+                            <option value="Стандарт">Стандарт — Популярное</option>
+                            <option value="Баттл">Баттл</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Желаемая дата</label>
+                    <input type="date" id="date" name="date">
+                </div>
+
+                <div class="form-group">
+                    <label for="comment">Комментарий</label>
+                    <textarea id="comment" name="comment" rows="3" placeholder="Особые пожелания, вопросы..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    💬 Отправить заявку в WhatsApp
+                </button>
+            </form>
+        </div>
+    </section>
+
     <!-- Contact Section -->
     <section class="contact" id="contact">
         <div class="container">
@@ -1344,13 +1790,83 @@
     </footer>
 
     <script>
+        // Game Tabs
+        const gameTabs = document.querySelectorAll('.game-tab');
+        const gameSections = document.querySelectorAll('.game-section');
+        
+        gameTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const game = tab.dataset.game;
+                
+                // Update tabs
+                gameTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update sections
+                gameSections.forEach(s => s.classList.remove('active'));
+                document.getElementById(game + '-section').classList.add('active');
+            });
+        });
+
+        // Booking Form Game Selector
+        const gameOptions = document.querySelectorAll('.game-option');
+        
+        gameOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                gameOptions.forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        // WhatsApp Form Submission
+        const bookingForm = document.getElementById('bookingForm');
+        
+        bookingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const selectedGame = document.querySelector('.game-option.selected').dataset.game;
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const players = document.getElementById('players').value;
+            const tariff = document.getElementById('tariff').value;
+            const date = document.getElementById('date').value;
+            const comment = document.getElementById('comment').value;
+            
+            const gameName = selectedGame === 'lazertag' ? 'Лазертаг' : 'Страйкбол';
+            
+            let message = `🎮 *Новая заявка на игру!*\n\n`;
+            message += `📍 *Тип игры:* ${gameName}\n`;
+            message += `👤 *Имя:* ${name}\n`;
+            message += `📞 *Телефон:* ${phone}\n`;
+            message += `👥 *Количество игроков:* ${players}\n`;
+            message += `💎 *Тариф:* ${tariff}\n`;
+            
+            if (date) {
+                message += `📅 *Желаемая дата:* ${date}\n`;
+            }
+            
+            if (comment) {
+                message += `💬 *Комментарий:* ${comment}\n`;
+            }
+            
+            message += `\n⏰ Заявка отправлена: ${new Date().toLocaleString('ru-RU')}`;
+            
+            const whatsappNumber = '79241657679';
+            const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+            
+            window.open(whatsappUrl, '_blank');
+        });
+
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
             });
         });
 
@@ -1370,6 +1886,7 @@
             const prevBtn = document.getElementById('arsenalPrev');
             const nextBtn = document.getElementById('arsenalNext');
             const dotsContainer = document.getElementById('arsenalDots');
+            const slider = document.querySelector('.arsenal-slider');
             
             if (!track || !prevBtn || !nextBtn) return;
             
@@ -1382,26 +1899,41 @@
             if (window.innerWidth <= 480) cardsPerView = 1;
             
             let currentIndex = 0;
-            const maxIndex = Math.ceil(totalCards / cardsPerView) - 1;
+            let maxIndex = Math.ceil(totalCards / cardsPerView) - 1;
+            
+            // Touch/Drag variables
+            let isDragging = false;
+            let startPos = 0;
+            let currentTranslate = 0;
+            let prevTranslate = 0;
+            let animationID;
             
             // Create dots
-            for (let i = 0; i <= maxIndex; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'arsenal-dot' + (i === 0 ? ' active' : '');
-                dot.addEventListener('click', () => goToSlide(i));
-                dotsContainer.appendChild(dot);
+            function createDots() {
+                dotsContainer.innerHTML = '';
+                for (let i = 0; i <= maxIndex; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'arsenal-dot' + (i === currentIndex ? ' active' : '');
+                    dot.addEventListener('click', () => goToSlide(i));
+                    dotsContainer.appendChild(dot);
+                }
+            }
+            createDots();
+            
+            function getDots() {
+                return dotsContainer.querySelectorAll('.arsenal-dot');
             }
             
-            const dots = dotsContainer.querySelectorAll('.arsenal-dot');
-            
             function updateSlider() {
-                const cardWidth = cards[0].offsetWidth + 24; // card width + gap
-                track.style.transform = `translateX(-${currentIndex * cardsPerView * cardWidth}px)`;
+                const cardWidth = cards[0].offsetWidth + 24;
+                currentTranslate = -currentIndex * cardsPerView * cardWidth;
+                prevTranslate = currentTranslate;
+                track.style.transform = `translateX(${currentTranslate}px)`;
                 
                 prevBtn.disabled = currentIndex === 0;
                 nextBtn.disabled = currentIndex >= maxIndex;
                 
-                dots.forEach((dot, i) => {
+                getDots().forEach((dot, i) => {
                     dot.classList.toggle('active', i === currentIndex);
                 });
             }
@@ -1428,6 +1960,62 @@
             prevBtn.addEventListener('click', prevSlide);
             nextBtn.addEventListener('click', nextSlide);
             
+            // Touch events (mobile swipe)
+            slider.addEventListener('touchstart', touchStart);
+            slider.addEventListener('touchend', touchEnd);
+            slider.addEventListener('touchmove', touchMove);
+            
+            // Mouse events (desktop drag)
+            slider.addEventListener('mousedown', touchStart);
+            slider.addEventListener('mouseup', touchEnd);
+            slider.addEventListener('mouseleave', () => {
+                if (isDragging) touchEnd();
+            });
+            slider.addEventListener('mousemove', touchMove);
+            
+            function touchStart(event) {
+                isDragging = true;
+                startPos = getPositionX(event);
+                animationID = requestAnimationFrame(animation);
+                slider.style.cursor = 'grabbing';
+            }
+            
+            function touchMove(event) {
+                if (isDragging) {
+                    const currentPosition = getPositionX(event);
+                    const diff = currentPosition - startPos;
+                    track.style.transform = `translateX(${prevTranslate + diff}px)`;
+                }
+            }
+            
+            function touchEnd(event) {
+                isDragging = false;
+                cancelAnimationFrame(animationID);
+                slider.style.cursor = 'grab';
+                
+                const movedBy = getPositionX(event) - startPos;
+                const threshold = 50;
+                
+                if (movedBy < -threshold && currentIndex < maxIndex) {
+                    currentIndex++;
+                } else if (movedBy > threshold && currentIndex > 0) {
+                    currentIndex--;
+                }
+                
+                updateSlider();
+            }
+            
+            function getPositionX(event) {
+                return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+            }
+            
+            function animation() {
+                if (isDragging) requestAnimationFrame(animation);
+            }
+            
+            // Prevent context menu on slider
+            slider.addEventListener('contextmenu', e => e.preventDefault());
+            
             // Update on resize
             window.addEventListener('resize', () => {
                 let newCardsPerView = 4;
@@ -1437,10 +2025,15 @@
                 
                 if (newCardsPerView !== cardsPerView) {
                     cardsPerView = newCardsPerView;
-                    currentIndex = 0;
+                    maxIndex = Math.ceil(totalCards / cardsPerView) - 1;
+                    currentIndex = Math.min(currentIndex, maxIndex);
+                    createDots();
                     updateSlider();
                 }
             });
+            
+            // Set initial cursor
+            slider.style.cursor = 'grab';
             
             updateSlider();
         })();
