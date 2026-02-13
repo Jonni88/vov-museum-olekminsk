@@ -553,13 +553,21 @@
             background: var(--color-dark);
         }
 
-        .arsenal-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        .arsenal-slider {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .arsenal-track {
+            display: flex;
+            transition: transform 0.5s ease;
             gap: 1.5rem;
         }
 
         .arsenal-card {
+            flex: 0 0 calc(25% - 1.125rem);
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: var(--radius);
@@ -594,6 +602,77 @@
         .arsenal-info p {
             font-size: 0.85rem;
             color: var(--color-text-muted);
+        }
+
+        .arsenal-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .arsenal-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 107, 53, 0.15);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            color: var(--color-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .arsenal-btn:hover {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+        }
+
+        .arsenal-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .arsenal-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .arsenal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 107, 53, 0.3);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .arsenal-dot.active {
+            background: var(--color-accent);
+            width: 30px;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 992px) {
+            .arsenal-card {
+                flex: 0 0 calc(33.333% - 1rem);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .arsenal-card {
+                flex: 0 0 calc(50% - 0.75rem);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .arsenal-card {
+                flex: 0 0 calc(100% - 0rem);
+            }
         }
 
         /* Contact Section */
@@ -1006,76 +1085,128 @@
                 <h2 class="section-title">Наше оборудование</h2>
                 <p class="section-subtitle">Профессиональное лазерное оружие на любой вкус — от пистолетов до снайперских винтовок</p>
             </div>
-            <div class="arsenal-grid">
-                <div class="arsenal-card">
-                    <img src="images/weapon-1.jpg" alt="Помповое ружьё">
-                    <div class="arsenal-info">
-                        <h4>Помповое ружьё</h4>
-                        <p>Мощный ближний бой</p>
+            
+            <div class="arsenal-slider">
+                <div class="arsenal-track" id="arsenalTrack">
+                    <div class="arsenal-card">
+                        <img src="images/weapon-1.jpg" alt="Помповое ружьё">
+                        <div class="arsenal-info">
+                            <h4>Помповое ружьё</h4>
+                            <p>Мощный ближний бой</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-2.jpg" alt="Steyr AUG">
+                        <div class="arsenal-info">
+                            <h4>Steyr AUG</h4>
+                            <p>Австрийская точность</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-3.jpg" alt="АКС-74У">
+                        <div class="arsenal-info">
+                            <h4>АКС-74У</h4>
+                            <p>Компактный автомат</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-4.jpg" alt="M4A1">
+                        <div class="arsenal-info">
+                            <h4>M4A1</h4>
+                            <p>Американский классик</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-5.jpg" alt="АК-74M">
+                        <div class="arsenal-info">
+                            <h4>АК-74M</h4>
+                            <p>Надёжность АК</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-6.jpg" alt="Укороченное ружьё">
+                        <div class="arsenal-info">
+                            <h4>Shorty</h4>
+                            <p>Мобильный дробовик</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-7.jpg" alt="Glock">
+                        <div class="arsenal-info">
+                            <h4>Glock</h4>
+                            <p>Пистолет на все случаи</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-8.jpg" alt="Modern AR">
+                        <div class="arsenal-info">
+                            <h4>Modern AR</h4>
+                            <p>Тактический модульный</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-9.jpg" alt="АКС-74">
+                        <div class="arsenal-info">
+                            <h4>АКС-74</h4>
+                            <p>Классика СССР</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-10.jpg" alt="Игровая станция">
+                        <div class="arsenal-info">
+                            <h4>Игровая база</h4>
+                            <p>Спецоборудование</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-11.jpg" alt="Бомба">
+                        <div class="arsenal-info">
+                            <h4>Устройство</h4>
+                            <p>Для сценария "Закладка"</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-12.jpg" alt="АК-12">
+                        <div class="arsenal-info">
+                            <h4>АК-12</h4>
+                            <p>Современный российский</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-13.jpg" alt="АК-15 Патник">
+                        <div class="arsenal-info">
+                            <h4>АК-15 Патник</h4>
+                            <p>Тактический автомат</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-14.jpg" alt="AR с барабаном">
+                        <div class="arsenal-info">
+                            <h4>AR Drum</h4>
+                            <p>С барабанным магазином</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-15.jpg" alt="Снайперская винтовка">
+                        <div class="arsenal-info">
+                            <h4>Снайперка</h4>
+                            <p>С глушителем и сошками</p>
+                        </div>
+                    </div>
+                    <div class="arsenal-card">
+                        <img src="images/weapon-16.jpg" alt="ПП">
+                        <div class="arsenal-info">
+                            <h4>Пистолет-пулемёт</h4>
+                            <p>Компактный SMG</p>
+                        </div>
                     </div>
                 </div>
-                <div class="arsenal-card">
-                    <img src="images/weapon-2.jpg" alt="Steyr AUG">
-                    <div class="arsenal-info">
-                        <h4>Steyr AUG</h4>
-                        <p>Австрийская точность</p>
-                    </div>
-                </div>
-                <div class="arsenal-card">
-                    <img src="images/weapon-3.jpg" alt="АКС-74У">
-                    <div class="arsenal-info">
-                        <h4>АКС-74У</h4>
-                        <p>Компактный автомат</p>
-                    </div>
-                </div>
-                <div class="arsenal-card">
-                    <img src="images/weapon-4.jpg" alt="M4A1">
-                    <div class="arsenal-info">
-                        <h4>M4A1</h4>
-                        <p>Американский классик</p>
-                    </div>
-                </div>
-                <div class="arsenal-card">
-                    <img src="images/weapon-5.jpg" alt="АК-74M">
-                    <div class="arsenal-info">
-                        <h4>АК-74M</h4>
-                        <p>Надёжность АК</p>
-                    </div>
-                </div>
-                <div class="arsenal-card">
-                    <img src="images/weapon-6.jpg" alt="Укороченное ружьё">
-                    <div class="arsenal-info">
-                        <h4>Shorty</h4>
-                        <p>Мобильный дробовик</p>
-                    </div>
-                </div>
-                <div class="arsenal-card">
-                    <img src="images/weapon-7.jpg" alt="Glock">
-                    <div class="arsenal-info">
-                        <h4>Glock</h4>
-                        <p>Пистолет на все случаи</p>
-                    </div>
-                </div>
-                <div class="arsenal-card">
-                    <img src="images/weapon-8.jpg" alt="Modern AR">
-                    <div class="arsenal-info">
-                        <h4>Modern AR</h4>
-                        <p>Тактический модульный</p>
-                    </div>
-                </div>
-                <div class="arsenal-card">
-                    <img src="images/weapon-9.jpg" alt="АКС-74">
-                    <div class="arsenal-info">
-                        <h4>АКС-74</h4>
-                        <p>Классика СССР</p>
-                    </div>
-                </div>
-                <div class="arsenal-card">
-                    <img src="images/weapon-10.jpg" alt="Игровая станция">
-                    <div class="arsenal-info">
-                        <h4>Игровая база</h4>
-                        <p>Спецоборудование</p>
-                    </div>
+                
+                <div class="arsenal-nav">
+                    <button class="arsenal-btn" id="arsenalPrev">◀</button>
+                    <div class="arsenal-dots" id="arsenalDots"></div>
+                    
+                    <button class="arsenal-btn" id="arsenalNext">▶</button>
                 </div>
             </div>
         </div>
@@ -1232,6 +1363,87 @@
                 header.style.background = 'rgba(13, 13, 13, 0.95)';
             }
         });
+
+        // Arsenal Slider
+        (function() {
+            const track = document.getElementById('arsenalTrack');
+            const prevBtn = document.getElementById('arsenalPrev');
+            const nextBtn = document.getElementById('arsenalNext');
+            const dotsContainer = document.getElementById('arsenalDots');
+            
+            if (!track || !prevBtn || !nextBtn) return;
+            
+            const cards = track.querySelectorAll('.arsenal-card');
+            const totalCards = cards.length;
+            
+            let cardsPerView = 4;
+            if (window.innerWidth <= 992) cardsPerView = 3;
+            if (window.innerWidth <= 768) cardsPerView = 2;
+            if (window.innerWidth <= 480) cardsPerView = 1;
+            
+            let currentIndex = 0;
+            const maxIndex = Math.ceil(totalCards / cardsPerView) - 1;
+            
+            // Create dots
+            for (let i = 0; i <= maxIndex; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'arsenal-dot' + (i === 0 ? ' active' : '');
+                dot.addEventListener('click', () => goToSlide(i));
+                dotsContainer.appendChild(dot);
+            }
+            
+            const dots = dotsContainer.querySelectorAll('.arsenal-dot');
+            
+            function updateSlider() {
+                const cardWidth = cards[0].offsetWidth + 24; // card width + gap
+                track.style.transform = `translateX(-${currentIndex * cardsPerView * cardWidth}px)`;
+                
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex >= maxIndex;
+                
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === currentIndex);
+                });
+            }
+            
+            function goToSlide(index) {
+                currentIndex = Math.max(0, Math.min(index, maxIndex));
+                updateSlider();
+            }
+            
+            function nextSlide() {
+                if (currentIndex < maxIndex) {
+                    currentIndex++;
+                    updateSlider();
+                }
+            }
+            
+            function prevSlide() {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateSlider();
+                }
+            }
+            
+            prevBtn.addEventListener('click', prevSlide);
+            nextBtn.addEventListener('click', nextSlide);
+            
+            // Update on resize
+            window.addEventListener('resize', () => {
+                let newCardsPerView = 4;
+                if (window.innerWidth <= 992) newCardsPerView = 3;
+                if (window.innerWidth <= 768) newCardsPerView = 2;
+                if (window.innerWidth <= 480) newCardsPerView = 1;
+                
+                if (newCardsPerView !== cardsPerView) {
+                    cardsPerView = newCardsPerView;
+                    currentIndex = 0;
+                    updateSlider();
+                }
+            });
+            
+            updateSlider();
+        })();
     </script>
 </body>
 </html>
