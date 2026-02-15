@@ -1,8 +1,11 @@
 const TelegramBot = require('node-telegram-bot-api');
 const config = require('./config/config');
-const searchHandler = require('./handlers/search');
-const addContentHandler = require('./handlers/addContent');
-const moderationHandler = require('./handlers/moderation');
+const mainMenu = require('./handlers/mainMenu');
+const addContent = require('./handlers/addContent');
+const advertising = require('./handlers/advertising');
+const partnership = require('./handlers/partnership');
+const claimAccess = require('./handlers/claimAccess');
+const adminPanel = require('./handlers/adminPanel');
 
 // Проверка конфигурации
 if (!config.botToken) {
@@ -11,159 +14,164 @@ if (!config.botToken) {
 }
 
 if (!config.adminChatId) {
-  console.warn('⚠️  Внимание: ADMIN_CHAT_ID не указан — модерация работать не будет');
+  console.warn('⚠️  Внимание: ADMIN_CHAT_ID не указан');
 }
 
 // Инициализация бота
 const bot = new TelegramBot(config.botToken, { polling: true });
-
 console.log('🤖 Бот мояолекма.рф запущен!');
-console.log(`🔗 Сайт: ${config.joomla.siteUrl}`);
 
-// Хранилище состояний пользователей (в памяти или заменить на БД)
+// Хранилище состояний пользователей
 const userStates = new Map();
 
-// ============ КОМАНДЫ ============
-
-// /start
+// ============ /START ============
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  const userName = msg.from.first_name;
+  const userName = msg.from.first_name || 'друг';
   
   const welcomeText = `👋 Привет, ${userName}!
 
-Я бот сайта *мояолекма.рф* — твоего справочника по Олёкминскому району.
+Я помогу вам разместить информацию на сайте *мояолекма.рф* — справочнике по Олёкминскому району.
 
-Вот что я умею:
-🔍 *Поиск* — найду компании, услуги, объявления
-➕ *Добавить* — размещу информацию о твоей компании или услуге
-
-Выбери действие в меню ниже 👇`;
+Выберите, чем я могу помочь:`;
 
   bot.sendMessage(chatId, welcomeText, {
     parse_mode: 'Markdown',
-    reply_markup: {
-      keyboard: [
-        ['🔍 Поиск', '➕ Добавить на сайт'],
-        ['❓ Помощь']
-      ],
-      resize_keyboard: true
-    }
+    reply_markup: mainMenu.getMainMenuKeyboard()
   });
 });
 
-// /help
-bot.onText(/\/help|❓ Помощь/, (msg) => {
-  const chatId = msg.chat.id;
-  
-  const helpText = `📚 *Как пользоваться ботом*
-
-*🔍 Поиск:*
-Просто нажми кнопку «Поиск» и напиши запрос — я найду информацию на сайте.
-
-Примеры запросов:
-• «электрик»
-• «доставка еды»  
-• «шиномонтаж»
-
-*➕ Добавить на сайт:*
-Если ты хочешь разместить информацию о своей компании или услуге:
-1. Нажми «Добавить на сайт»
-2. Выбери тип записи
-3. Ответь на вопросы бота
-4. Отправь заявку на модерацию
-
-После проверки администратором твоя запись появится на сайте!
-
-📞 По вопросам: @Jonni88`;
-
-  bot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
+// ============ ГЛАВНОЕ МЕНЮ ============
+bot.onText(/📝 Добавить на сайт/, (msg) => {
+  addContent.showAddMenu(bot, msg.chat.id);
 });
 
-// ============ ОБРАБОТКА СООБЩЕНИЙ ============
-
-bot.on('message', async (msg) => {
-  const chatId = msg.chat.id;
-  const text = msg.text;
-  
-  // Игнорируем команды
-  if (text && text.startsWith('/')) return;
-  
-  // Игнорируем кнопки меню (обрабатываем отдельно)
-  if (text === '🔍 Поиск') {
-    userStates.set(chatId, { action: 'search', step: 'waiting_query' });
-    bot.sendMessage(chatId, '🔍 Введи поисковый запрос. Например: «электрик» или «доставка еды»', {
-      reply_markup: { remove_keyboard: true }
-    });
-    return;
-  }
-  
-  if (text === '➕ Добавить на сайт') {
-    addContentHandler.start(bot, chatId, userStates);
-    return;
-  }
-  
-  // Обработка состояний
-  const state = userStates.get(chatId);
-  
-  if (state) {
-    if (state.action === 'search' && state.step === 'waiting_query') {
-      await searchHandler.handleSearch(bot, chatId, text, config);
-      userStates.delete(chatId);
-      return;
-    }
-    
-    if (state.action === 'add_content') {
-      await addContentHandler.handleStep(bot, chatId, msg, userStates, config);
-      return;
-    }
-  }
-  
-  // Если не распознали — предлагаем меню
-  bot.sendMessage(chatId, 'Выбери действие:', {
-    reply_markup: {
-      keyboard: [
-        ['🔍 Поиск', '➕ Добавить на сайт'],
-        ['❓ Помощь']
-      ],
-      resize_keyboard: true
-    }
-  });
+bot.onText(/📢 Реклама/, (msg) => {
+  advertising.start(bot, msg.chat.id, userStates);
 });
 
-// ============ INLINE КНОПКИ (МОДЕРАЦИЯ) ============
+bot.onText(/🤝 Сотрудничество/, (msg) => {
+  partnership.start(bot, msg.chat.id, userStates);
+});
 
+bot.onText(/🔐 Моя организация/, (msg) => {
+  claimAccess.start(bot, msg.chat.id, userStates);
+});
+
+bot.onText(/❓ Помощь/, (msg) => {
+  mainMenu.showHelp(bot, msg.chat.id);
+});
+
+bot.onText(/🏠 Главное меню/, (msg) => {
+  mainMenu.showMainMenu(bot, msg.chat.id);
+});
+
+// ============ INLINE КНОПКИ ============
 bot.on('callback_query', async (query) => {
   const data = query.data;
+  const chatId = query.message.chat.id;
+  const messageId = query.message.message_id;
   
-  if (data.startsWith('approve:') || data.startsWith('reject:')) {
-    await moderationHandler.handleCallback(bot, query, config);
+  // Добавление на сайт
+  if (data.startsWith('add_')) {
+    await addContent.handleCallback(bot, query, userStates, config);
   }
   
-  if (data.startsWith('search_page:')) {
-    await searchHandler.handlePagination(bot, query, config);
+  // Реклама
+  if (data.startsWith('adv_')) {
+    await advertising.handleCallback(bot, query, userStates);
   }
   
-  if (data.startsWith('add_type:')) {
-    await addContentHandler.handleTypeSelection(bot, query, userStates);
+  // Сотрудничество
+  if (data.startsWith('partner_')) {
+    await partnership.handleCallback(bot, query, userStates);
+  }
+  
+  // Получить доступ
+  if (data.startsWith('claim_')) {
+    await claimAccess.handleCallback(bot, query, userStates);
+  }
+  
+  // Админ панель
+  if (data.startsWith('admin_')) {
+    await adminPanel.handleCallback(bot, query, userStates, config);
   }
   
   bot.answerCallbackQuery(query.id);
 });
 
-// ============ ОБРАБОТКА ФОТО ============
+// ============ ОБРАБОТКА ТЕКСТА ============
+bot.on('message', async (msg) => {
+  // Игнорируем команды и кнопки меню
+  if (!msg.text || msg.text.startsWith('/') || mainMenu.isMenuButton(msg.text)) {
+    return;
+  }
+  
+  const chatId = msg.chat.id;
+  const state = userStates.get(chatId);
+  
+  if (!state) return;
+  
+  // Маршрутизация по контексту
+  switch (state.context) {
+    case 'add_content':
+      await addContent.handleMessage(bot, msg, userStates, config);
+      break;
+      
+    case 'advertising':
+      await advertising.handleMessage(bot, msg, userStates, config);
+      break;
+      
+    case 'partnership':
+      await partnership.handleMessage(bot, msg, userStates, config);
+      break;
+      
+    case 'claim_access':
+      await claimAccess.handleMessage(bot, msg, userStates, config);
+      break;
+  }
+});
 
+// ============ ОБРАБОТКА ФОТО/ДОКУМЕНТОВ ============
 bot.on('photo', async (msg) => {
   const chatId = msg.chat.id;
   const state = userStates.get(chatId);
   
-  if (state && state.action === 'add_content') {
-    await addContentHandler.handlePhoto(bot, chatId, msg, userStates);
+  if (state?.waitingFor === 'photo') {
+    await handlePhoto(bot, msg, userStates, state);
   }
 });
 
-// ============ ОШИБКИ ============
+bot.on('document', async (msg) => {
+  const chatId = msg.chat.id;
+  const state = userStates.get(chatId);
+  
+  if (state?.waitingFor === 'document') {
+    await handleDocument(bot, msg, userStates, state);
+  }
+});
 
+async function handlePhoto(bot, msg, userStates, state) {
+  const photos = msg.photo;
+  const largestPhoto = photos[photos.length - 1];
+  
+  state.data.photo = {
+    fileId: largestPhoto.file_id,
+    caption: msg.caption || ''
+  };
+  
+  // Возвращаем управление соответствующему обработчику
+  switch (state.context) {
+    case 'add_content':
+      await addContent.handlePhoto(bot, msg, userStates);
+      break;
+    case 'claim_access':
+      await claimAccess.handlePhoto(bot, msg, userStates);
+      break;
+  }
+}
+
+// ============ ОШИБКИ ============
 bot.on('polling_error', (error) => {
   console.error('Polling error:', error);
 });
@@ -172,4 +180,13 @@ process.on('SIGINT', () => {
   console.log('\n👋 Бот остановлен');
   bot.stopPolling();
   process.exit(0);
+});
+
+// ============ АДМИН КОМАНДЫ ============
+bot.onText(/\/admin/, (msg) => {
+  adminPanel.showAdminMenu(bot, msg.chat.id, config);
+});
+
+bot.onText(/\/stats/, (msg) => {
+  adminPanel.showStats(bot, msg.chat.id, config);
 });

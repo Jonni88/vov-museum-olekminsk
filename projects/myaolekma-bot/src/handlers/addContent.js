@@ -1,50 +1,29 @@
+/**
+ * Добавление контента на сайт
+ * Два варианта: самостоятельно или через админа
+ */
+
 const { v4: uuidv4 } = require('uuid');
 
-// Шаги добавления контента
-const STEPS = {
-  SELECT_TYPE: 'select_type',
-  NAME: 'name',
-  PHOTO: 'photo',
-  DESCRIPTION: 'description',
-  SCHEDULE: 'schedule',
-  SOCIAL: 'social',
-  PHONES: 'phones',
-  EMAIL: 'email',
-  ADDRESS: 'address',
-  CONFIRM: 'confirm'
+const CONTENT_TYPES = {
+  organization: { icon: '🏢', name: 'Организацию', category: 'Организации' },
+  news: { icon: '📰', name: 'Новость', category: 'Новости' },
+  service: { icon: '🛠', name: 'Услугу', category: 'Услуги' },
+  ad: { icon: '📋', name: 'Объявление', category: 'Объявления' }
 };
 
-const STEP_NAMES = {
-  [STEPS.NAME]: 'название',
-  [STEPS.PHOTO]: 'фото',
-  [STEPS.DESCRIPTION]: 'описание',
-  [STEPS.SCHEDULE]: 'график работы',
-  [STEPS.SOCIAL]: 'соцсети',
-  [STEPS.PHONES]: 'телефоны',
-  [STEPS.EMAIL]: 'email',
-  [STEPS.ADDRESS]: 'адрес'
-};
-
-/**
- * Начало процесса добавления контента
- */
-function start(bot, chatId, userStates) {
-  userStates.set(chatId, {
-    action: 'add_content',
-    step: STEPS.SELECT_TYPE,
-    data: {},
-    tempId: uuidv4()
-  });
-  
-  bot.sendMessage(chatId, '➕ *Добавление на сайт мояолекма.рф*\n\nВыбери тип записи:', {
+// Показать меню выбора типа контента
+function showAddMenu(bot, chatId) {
+  bot.sendMessage(chatId, '📝 *Что хотите добавить на сайт?*', {
     parse_mode: 'Markdown',
     reply_markup: {
       inline_keyboard: [
         [
-          { text: '🏢 Компания', callback_data: 'add_type:company' },
-          { text: '🛠 Услуга', callback_data: 'add_type:service' }
+          { text: '🏢 Организацию', callback_data: 'add_type:organization' },
+          { text: '📰 Новость', callback_data: 'add_type:news' }
         ],
         [
+          { text: '🛠 Услугу', callback_data: 'add_type:service' },
           { text: '📋 Объявление', callback_data: 'add_type:ad' }
         ],
         [
@@ -55,305 +34,302 @@ function start(bot, chatId, userStates) {
   });
 }
 
-/**
- * Обработка выбора типа
- */
-async function handleTypeSelection(bot, query, userStates) {
+// Обработка callback
+async function handleCallback(bot, query, userStates, config) {
   const data = query.data;
   const chatId = query.message.chat.id;
-  const messageId = query.message.message_id;
   
   if (data === 'add_cancel') {
-    userStates.delete(chatId);
-    await bot.editMessageText('❌ Добавление отменено', {
-      chat_id: chatId,
-      message_id: messageId
-    });
-    await showMainMenu(bot, chatId);
+    await cancelAdd(bot, chatId, query.message.message_id, userStates);
     return;
   }
   
-  const type = data.split(':')[1];
-  const typeNames = {
-    company: 'Компания',
-    service: 'Услуга',
-    ad: 'Объявление'
-  };
+  if (data.startsWith('add_type:')) {
+    const type = data.split(':')[1];
+    await showMethodChoice(bot, chatId, query.message.message_id, type, userStates);
+    return;
+  }
   
-  const state = userStates.get(chatId);
-  if (state) {
-    state.data.type = type;
-    state.data.typeName = typeNames[type];
-    state.step = STEPS.NAME;
-    
-    await bot.editMessageText(`✅ Тип: *${typeNames[type]}*\n\n📝 Введи *название* (например: «Мастерская по ремонту обуви»):`, {
-      chat_id: chatId,
-      message_id: messageId,
-      parse_mode: 'Markdown'
-    });
+  if (data.startsWith('add_method:')) {
+    const [, type, method] = data.split(':');
+    if (method === 'self') {
+      await sendSelfServiceLink(bot, chatId, query.message.message_id, type, config);
+    } else {
+      await startAdminSubmission(bot, chatId, query.message.message_id, type, userStates);
+    }
+    return;
   }
 }
 
-/**
- * Обработка шага
- */
-async function handleStep(bot, chatId, msg, userStates, config) {
-  const state = userStates.get(chatId);
-  if (!state) return;
+// Показать выбор способа (самому или через админа)
+async function showMethodChoice(bot, chatId, messageId, type, userStates) {
+  const typeInfo = CONTENT_TYPES[type];
   
-  const text = msg.text;
-  
-  switch (state.step) {
-    case STEPS.NAME:
-      if (!text || text.trim().length < 2) {
-        await bot.sendMessage(chatId, '⚠️ Название слишком короткое. Введи минимум 2 символа:');
-        return;
-      }
-      state.data.name = text.trim();
-      state.step = STEPS.PHOTO;
-      await bot.sendMessage(chatId, 
-        `✅ Название: *${state.data.name}*\n\n📸 Отправь *фото* или *логотип* (можно пропустить — отправь «-»):`, 
-        { parse_mode: 'Markdown' }
-      );
-      break;
-      
-    case STEPS.PHOTO:
-      // Фото обрабатывается отдельно в handlePhoto
-      if (text === '-') {
-        state.data.photo = null;
-        state.step = STEPS.DESCRIPTION;
-        await bot.sendMessage(chatId, 
-          `📸 Фото: *не добавлено*\n\n📝 Введи *описание* (чем занимаешься, что предлагаешь):`, 
-          { parse_mode: 'Markdown' }
-        );
-      } else {
-        await bot.sendMessage(chatId, '⚠️ Отправь фото или напиши «-» чтобы пропустить:');
-      }
-      break;
-      
-    case STEPS.DESCRIPTION:
-      if (!text || text.trim().length < 10) {
-        await bot.sendMessage(chatId, '⚠️ Описание слишком короткое. Минимум 10 символов:');
-        return;
-      }
-      state.data.description = text.trim();
-      state.step = STEPS.SCHEDULE;
-      await bot.sendMessage(chatId, 
-        `✅ Описание сохранено\n\n🕐 Введи *график работы* (например: «Пн-Пт 9:00-18:00, Сб 10:00-15:00» или «-»):`, 
-        { parse_mode: 'Markdown' }
-      );
-      break;
-      
-    case STEPS.SCHEDULE:
-      state.data.schedule = text === '-' ? null : text.trim();
-      state.step = STEPS.SOCIAL;
-      await bot.sendMessage(chatId, 
-        `✅ График: *${state.data.schedule || 'не указан'}*\n\n🔗 Введи *ссылки на соцсети* (через запятую или «-»):\nПример: vk.com/group, instagram.com/name`, 
-        { parse_mode: 'Markdown' }
-      );
-      break;
-      
-    case STEPS.SOCIAL:
-      state.data.social = text === '-' ? null : text.trim();
-      state.step = STEPS.PHONES;
-      await bot.sendMessage(chatId, 
-        `✅ Соцсети: *${state.data.social || 'не указаны'}*\n\n📞 Введи *номера телефонов* (через запятую):\nПример: 89241234567, 8411-123456`, 
-        { parse_mode: 'Markdown' }
-      );
-      break;
-      
-    case STEPS.PHONES:
-      if (!text || text.trim().length < 5) {
-        await bot.sendMessage(chatId, '⚠️ Укажи хотя бы один телефон:');
-        return;
-      }
-      state.data.phones = text.trim();
-      state.step = STEPS.EMAIL;
-      await bot.sendMessage(chatId, 
-        `✅ Телефоны: *${state.data.phones}*\n\n📧 Введи *email* (или «-»):`, 
-        { parse_mode: 'Markdown' }
-      );
-      break;
-      
-    case STEPS.EMAIL:
-      state.data.email = text === '-' ? null : text.trim();
-      state.step = STEPS.ADDRESS;
-      await bot.sendMessage(chatId, 
-        `✅ Email: *${state.data.email || 'не указан'}*\n\n📍 Введи *адрес* (или «-»):\nПример: ул. Ленина, 15`, 
-        { parse_mode: 'Markdown' }
-      );
-      break;
-      
-    case STEPS.ADDRESS:
-      state.data.address = text === '-' ? null : text.trim();
-      state.step = STEPS.CONFIRM;
-      await showConfirmation(bot, chatId, state);
-      break;
-      
-    case STEPS.CONFIRM:
-      if (text.toLowerCase() === 'отправить') {
-        await submitForModeration(bot, chatId, state, config);
-        userStates.delete(chatId);
-      } else if (text.toLowerCase() === 'изменить') {
-        state.step = STEPS.NAME;
-        await bot.sendMessage(chatId, '📝 Начнём сначала. Введи *название*:', { parse_mode: 'Markdown' });
-      } else if (text.toLowerCase() === 'отмена') {
-        userStates.delete(chatId);
-        await bot.sendMessage(chatId, '❌ Добавление отменено');
-        await showMainMenu(bot, chatId);
-      } else {
-        await bot.sendMessage(chatId, 'Напиши: *отправить*, *изменить* или *отмена*', { parse_mode: 'Markdown' });
-      }
-      break;
-  }
-}
+  const text = `${typeInfo.icon} *Добавление ${typeInfo.name.toLowerCase()}*
 
-/**
- * Обработка фото
- */
-async function handlePhoto(bot, chatId, msg, userStates) {
-  const state = userStates.get(chatId);
-  if (!state || state.step !== STEPS.PHOTO) return;
-  
-  // Берём фото максимального размера
-  const photos = msg.photo;
-  const largestPhoto = photos[photos.length - 1];
-  
-  state.data.photo = {
-    fileId: largestPhoto.file_id,
-    width: largestPhoto.width,
-    height: largestPhoto.height
-  };
-  state.step = STEPS.DESCRIPTION;
-  
-  await bot.sendMessage(chatId, 
-    `✅ Фото добавлено\n\n📝 Введи *описание* (чем занимаешься, что предлагаешь):`, 
-    { parse_mode: 'Markdown' }
-  );
-}
+Как вы хотите добавить информацию?`;
 
-/**
- * Показать предпросмотр перед отправкой
- */
-async function showConfirmation(bot, chatId, state) {
-  const data = state.data;
-  
-  let preview = `📋 *Проверь данные перед отправкой:*\n\n`;
-  preview += `*Тип:* ${data.typeName}\n`;
-  preview += `*Название:* ${data.name}\n`;
-  preview += `*Описание:* ${data.description.substring(0, 100)}${data.description.length > 100 ? '...' : ''}\n`;
-  
-  if (data.schedule) preview += `*График:* ${data.schedule}\n`;
-  if (data.social) preview += `*Соцсети:* ${data.social}\n`;
-  preview += `*Телефоны:* ${data.phones}\n`;
-  if (data.email) preview += `*Email:* ${data.email}\n`;
-  if (data.address) preview += `*Адрес:* ${data.address}\n`;
-  
-  preview += `\n✅ Всё верно? Напиши: *отправить*, *изменить* или *отмена*`;
-  
-  // Если есть фото — отправляем его с описанием
-  if (data.photo) {
-    await bot.sendPhoto(chatId, data.photo.fileId, {
-      caption: preview,
-      parse_mode: 'Markdown'
-    });
-  } else {
-    await bot.sendMessage(chatId, preview, { parse_mode: 'Markdown' });
-  }
-}
-
-/**
- * Отправка на модерацию
- */
-async function submitForModeration(bot, chatId, state, config) {
-  const data = state.data;
-  data.userId = chatId;
-  data.username = state.username;
-  data.submittedAt = new Date().toISOString();
-  data.status = 'pending';
-  
-  // Здесь сохраняем в БД или файл
-  // В реальном проекте: await saveToDatabase(data);
-  console.log('New submission:', data);
-  
-  // Отправляем пользователю подтверждение
-  await bot.sendMessage(chatId, 
-    `✅ *Заявка отправлена на модерацию!*\n\n` +
-    `После проверки администратором твоя запись появится на сайте.\n` +
-    `Обычно это занимает 1-2 дня.`,
-    { parse_mode: 'Markdown' }
-  );
-  
-  // Уведомляем админа
-  if (config.adminChatId) {
-    await notifyAdmin(bot, config.adminChatId, data, state.tempId);
-  }
-  
-  await showMainMenu(bot, chatId);
-}
-
-/**
- * Уведомление администратора
- */
-async function notifyAdmin(bot, adminChatId, data, tempId) {
-  let message = `🔔 *Новая заявка на публикацию!*\n\n`;
-  message += `*Тип:* ${data.typeName}\n`;
-  message += `*Название:* ${data.name}\n`;
-  message += `*Описание:* ${data.description.substring(0, 200)}${data.description.length > 200 ? '...' : ''}\n`;
-  
-  if (data.schedule) message += `*График:* ${data.schedule}\n`;
-  if (data.phones) message += `*Телефоны:* ${data.phones}\n`;
-  if (data.email) message += `*Email:* ${data.email}\n`;
-  if (data.address) message += `*Адрес:* ${data.address}\n`;
-  if (data.social) message += `*Соцсети:* ${data.social}\n`;
-  
-  message += `\n*Отправитель:* @${data.username || 'неизвестно'} (ID: ${data.userId})`;
-  
-  const keyboard = {
-    inline_keyboard: [
-      [
-        { text: '✅ Одобрить', callback_data: `approve:${tempId}` },
-        { text: '❌ Отклонить', callback_data: `reject:${tempId}` }
-      ],
-      [
-        { text: '📝 Посмотреть полностью', callback_data: `view:${tempId}` }
-      ]
-    ]
-  };
-  
-  if (data.photo) {
-    await bot.sendPhoto(adminChatId, data.photo.fileId, {
-      caption: message,
-      parse_mode: 'Markdown',
-      reply_markup: keyboard
-    });
-  } else {
-    await bot.sendMessage(adminChatId, message, {
-      parse_mode: 'Markdown',
-      reply_markup: keyboard
-    });
-  }
-}
-
-/**
- * Показать главное меню
- */
-async function showMainMenu(bot, chatId) {
-  await bot.sendMessage(chatId, 'Выбери действие:', {
+  await bot.editMessageText(text, {
+    chat_id: chatId,
+    message_id: messageId,
+    parse_mode: 'Markdown',
     reply_markup: {
-      keyboard: [
-        ['🔍 Поиск', '➕ Добавить на сайт'],
-        ['❓ Помощь']
-      ],
-      resize_keyboard: true
+      inline_keyboard: [
+        [
+          { text: '✏️ Заполнить самому', callback_data: `add_method:${type}:self` }
+        ],
+        [
+          { text: '📤 Отправить админу', callback_data: `add_method:${type}:admin` }
+        ],
+        [
+          { text: '◀️ Назад', callback_data: 'add_back' }
+        ]
+      ]
     }
   });
 }
 
+// Вариант 1: Отправить ссылку на самостоятельное заполнение
+async function sendSelfServiceLink(bot, chatId, messageId, type, config) {
+  const typeInfo = CONTENT_TYPES[type];
+  
+  const text = `${typeInfo.icon} *Добавление ${typeInfo.name.toLowerCase()}*
+
+✏️ *Заполнить самому*
+
+Для добавления информации вам нужно:
+1. Зарегистрироваться на сайте
+2. Авторизоваться
+3. Заполнить форму
+
+👇 Нажмите на кнопку ниже:`;
+
+  await bot.editMessageText(text, {
+    chat_id: chatId,
+    message_id: messageId,
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '📝 Регистрация', url: config.siteRegisterUrl },
+          { text: '🔐 Вход', url: config.siteLoginUrl }
+        ],
+        [
+          { text: '🏠 Главное меню', callback_data: 'add_cancel' }
+        ]
+      ]
+    }
+  });
+}
+
+// Вариант 2: Начать отправку данных админу
+async function startAdminSubmission(bot, chatId, messageId, type, userStates) {
+  const typeInfo = CONTENT_TYPES[type];
+  const submissionId = uuidv4();
+  
+  userStates.set(chatId, {
+    context: 'add_content',
+    type: type,
+    typeName: typeInfo.name,
+    step: 'name',
+    data: { submissionId, type },
+    messageId: messageId
+  });
+  
+  const text = `${typeInfo.icon} *Отправка данных админу*
+
+Я задам несколько вопросов, а потом передам всё администратору.
+
+📝 *Вопрос 1 из 6*
+Введите *название* ${typeInfo.name.toLowerCase()}:`;
+
+  await bot.editMessageText(text, {
+    chat_id: chatId,
+    message_id: messageId,
+    parse_mode: 'Markdown'
+  });
+}
+
+// Обработка сообщений при добавлении через админа
+async function handleMessage(bot, msg, userStates, config) {
+  const chatId = msg.chat.id;
+  const text = msg.text;
+  const state = userStates.get(chatId);
+  
+  if (!state || state.context !== 'add_content') return;
+  
+  switch (state.step) {
+    case 'name':
+      if (text.length < 2) {
+        await bot.sendMessage(chatId, '⚠️ Название слишком короткое. Попробуйте ещё раз:');
+        return;
+      }
+      state.data.name = text;
+      state.step = 'description';
+      await bot.sendMessage(chatId, 
+        `✅ Название: *${text}*\n\n📝 *Вопрос 2*\nВведите *описание*:`, 
+        { parse_mode: 'Markdown' }
+      );
+      break;
+      
+    case 'description':
+      if (text.length < 10) {
+        await bot.sendMessage(chatId, '⚠️ Описание слишком короткое (минимум 10 символов):');
+        return;
+      }
+      state.data.description = text;
+      state.step = 'contacts';
+      await bot.sendMessage(chatId, 
+        `✅ Описание сохранено\n\n📞 *Вопрос 3*\nВведите *контактные данные* (телефон, email):`, 
+        { parse_mode: 'Markdown' }
+      );
+      break;
+      
+    case 'contacts':
+      state.data.contacts = text;
+      state.step = 'address';
+      await bot.sendMessage(chatId, 
+        `✅ Контакты: *${text}*\n\n📍 *Вопрос 4*\nВведите *адрес* (или "нет"):`, 
+        { parse_mode: 'Markdown' }
+      );
+      break;
+      
+    case 'address':
+      state.data.address = text.toLowerCase() === 'нет' ? null : text;
+      state.step = 'schedule';
+      await bot.sendMessage(chatId, 
+        `✅ Адрес: *${state.data.address || 'не указан'}*\n\n🕐 *Вопрос 5*\nВведите *график работы* (или "нет"):`, 
+        { parse_mode: 'Markdown' }
+      );
+      break;
+      
+    case 'schedule':
+      state.data.schedule = text.toLowerCase() === 'нет' ? null : text;
+      state.step = 'social';
+      await bot.sendMessage(chatId, 
+        `✅ График: *${state.data.schedule || 'не указан'}*\n\n🔗 *Вопрос 6*\nСсылки на *соцсети* (или "нет"):`, 
+        { parse_mode: 'Markdown' }
+      );
+      break;
+      
+    case 'social':
+      state.data.social = text.toLowerCase() === 'нет' ? null : text;
+      state.step = 'photo';
+      await bot.sendMessage(chatId, 
+        `✅ Соцсети: *${state.data.social || 'не указаны'}*\n\n📸 *Последний вопрос*\nОтправьте *фото* (логотип, фото организации) или напишите "нет":`
+      );
+      break;
+  }
+}
+
+// Обработка фото
+async function handlePhoto(bot, msg, userStates) {
+  const chatId = msg.chat.id;
+  const state = userStates.get(chatId);
+  
+  if (!state || state.step !== 'photo') return;
+  
+  const photos = msg.photo;
+  const largestPhoto = photos[photos.length - 1];
+  
+  state.data.photo = {
+    fileId: largestPhoto.file_id
+  };
+  
+  await showConfirmation(bot, chatId, state, userStates);
+}
+
+// Показать подтверждение
+async function showConfirmation(bot, chatId, state, userStates) {
+  const data = state.data;
+  const typeInfo = CONTENT_TYPES[state.type];
+  
+  let summary = `📋 *Проверьте данные:*\n\n`;
+  summary += `*Тип:* ${typeInfo.name}\n`;
+  summary += `*Название:* ${data.name}\n`;
+  summary += `*Описание:* ${data.description.substring(0, 100)}${data.description.length > 100 ? '...' : ''}\n`;
+  summary += `*Контакты:* ${data.contacts}\n`;
+  if (data.address) summary += `*Адрес:* ${data.address}\n`;
+  if (data.schedule) summary += `*График:* ${data.schedule}\n`;
+  if (data.social) summary += `*Соцсети:* ${data.social}\n`;
+  if (data.photo) summary += `*Фото:* ✅ добавлено\n`;
+  
+  summary += `\nВсё верно?`;
+  
+  await bot.sendMessage(chatId, summary, {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '✅ Отправить админу', callback_data: `add_confirm:${data.submissionId}` }
+        ],
+        [
+          { text: '🔄 Заполнить заново', callback_data: `add_restart:${state.type}` }
+        ]
+      ]
+    }
+  });
+  
+  // Сохраняем для обработки подтверждения
+  state.step = 'confirm';
+}
+
+// Отмена
+async function cancelAdd(bot, chatId, messageId, userStates) {
+  userStates.delete(chatId);
+  await bot.editMessageText('❌ Отменено. Выберите действие:', {
+    chat_id: chatId,
+    message_id: messageId,
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '🏠 Главное меню', callback_data: 'main_menu' }]
+      ]
+    }
+  });
+}
+
+// Отправка админу
+async function sendToAdmin(bot, chatId, user, state, config) {
+  if (!config.adminChatId) return;
+  
+  const data = state.data;
+  const typeInfo = CONTENT_TYPES[state.type];
+  const userLink = user.username ? `@${user.username}` : `[${user.first_name}](tg://user?id=${chatId})`;
+  
+  let message = `📝 *Новая заявка на добавление!*\n\n`;
+  message += `*Тип:* ${typeInfo.name}\n`;
+  message += `*Название:* ${data.name}\n\n`;
+  message += `*Описание:*\n${data.description}\n\n`;
+  message += `*Контакты:* ${data.contacts}\n`;
+  if (data.address) message += `*Адрес:* ${data.address}\n`;
+  if (data.schedule) message += `*График:* ${data.schedule}\n`;
+  if (data.social) message += `*Соцсети:* ${data.social}\n`;
+  message += `\n*Отправил:* ${userLink}\n`;
+  message += `*ID:* ${chatId}`;
+  
+  await bot.sendMessage(config.adminChatId, message, {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: '✅ Добавлено на сайт', callback_data: `admin_done:${chatId}` }
+        ]
+      ]
+    }
+  });
+  
+  // Отправляем фото если есть
+  if (data.photo) {
+    await bot.sendPhoto(config.adminChatId, data.photo.fileId, {
+      caption: `📎 Фото к заявке от ${userLink}`
+    });
+  }
+}
+
 module.exports = {
-  start,
-  handleTypeSelection,
-  handleStep,
+  showAddMenu,
+  handleCallback,
+  handleMessage,
   handlePhoto,
-  STEPS
+  sendToAdmin
 };
