@@ -74,10 +74,41 @@ async function handleCallback(bot, query, userStates, config) {
   if (data.startsWith('admin_done:')) {
     const userId = data.split(':')[1];
     await bot.sendMessage(chatId, `✅ Отметили как выполненное: ${userId}`);
-    await bot.sendMessage(userId, 
+    await bot.sendMessage(userId,
       '✅ *Готово!*\n\n' +
       'Ваша информация добавлена на сайт мояолекма.рф\n\n' +
       `👉 ${config.siteUrl}`,
+      { parse_mode: 'Markdown' }
+    );
+  }
+
+  if (data.startsWith('admin_update_done:')) {
+    const userId = data.split(':')[1];
+    await bot.sendMessage(chatId, `✅ Данные обновлены для ${userId}`);
+    await bot.sendMessage(userId,
+      '✅ *Данные обновлены!*\n\n' +
+      'Актуальная информация опубликована на сайте.\n\n' +
+      `👉 ${config.siteUrl}`,
+      { parse_mode: 'Markdown' }
+    );
+  }
+
+  if (data.startsWith('admin_hashtag_done:')) {
+    const userId = data.split(':')[1];
+    await bot.sendMessage(chatId, `✅ Хэштег добавлен для ${userId}`);
+    await bot.sendMessage(userId,
+      '✅ *Хэштег добавлен!*\n\n' +
+      'Ваш хэштег теперь доступен на сайте.',
+      { parse_mode: 'Markdown' }
+    );
+  }
+
+  if (data.startsWith('admin_report_done:')) {
+    const userId = data.split(':')[1];
+    await bot.sendMessage(chatId, `✅ Жалоба обработана для ${userId}`);
+    await bot.sendMessage(userId,
+      '🙏 *Спасибо за обращение!*\n\n' +
+      'Ваша жалоба принята и будет рассмотрена.',
       { parse_mode: 'Markdown' }
     );
   }

@@ -8,6 +8,10 @@ const claimAccess = require('./handlers/claimAccess');
 const hashtag = require('./handlers/hashtag');
 const feedback = require('./handlers/feedback');
 const updateData = require('./handlers/updateData');
+const report = require('./handlers/report');
+const search = require('./handlers/search');
+const share = require('./handlers/share');
+const faq = require('./handlers/faq');
 const adminPanel = require('./handlers/adminPanel');
 
 // Проверка конфигурации
@@ -73,8 +77,20 @@ bot.onText(/🔄 Актуализировать данные/, (msg) => {
   updateData.start(bot, msg.chat.id, userStates);
 });
 
-bot.onText(/❓ Помощь/, (msg) => {
-  mainMenu.showHelp(bot, msg.chat.id);
+bot.onText(/🚨 Сообщить о проблеме/, (msg) => {
+  report.start(bot, msg.chat.id, userStates);
+});
+
+bot.onText(/🔍 Поиск/, (msg) => {
+  search.start(bot, msg.chat.id, userStates);
+});
+
+bot.onText(/📤 Поделиться/, (msg) => {
+  share.start(bot, msg.chat.id, userStates);
+});
+
+bot.onText(/❓ FAQ/, (msg) => {
+  faq.showFAQ(bot, msg.chat.id);
 });
 
 bot.onText(/🏠 Главное меню/, (msg) => {
@@ -111,7 +127,22 @@ bot.on('callback_query', async (query) => {
   if (data.startsWith('feedback_')) {
     await feedback.handleCallback(bot, query, userStates);
   }
-  
+
+  // Жалоба на проблему
+  if (data.startsWith('report_')) {
+    await report.handleCallback(bot, query, userStates);
+  }
+
+  // FAQ
+  if (data.startsWith('faq_')) {
+    await faq.handleCallback(bot, query, userStates);
+  }
+
+  // Поиск
+  if (data === 'search_done') {
+    userStates.delete(chatId);
+  }
+
   // Админ панель
   if (data.startsWith('admin_')) {
     await adminPanel.handleCallback(bot, query, userStates, config);
@@ -160,6 +191,18 @@ bot.on('message', async (msg) => {
       
     case 'update_data':
       await updateData.handleMessage(bot, msg, userStates, config);
+      break;
+
+    case 'report':
+      await report.handleMessage(bot, msg, userStates, config);
+      break;
+
+    case 'search':
+      await search.handleMessage(bot, msg, userStates, config);
+      break;
+
+    case 'share':
+      await share.handleMessage(bot, msg, userStates, config);
       break;
   }
 });
