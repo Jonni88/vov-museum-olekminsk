@@ -89,8 +89,8 @@ async function handleMessage(bot, msg, userStates, config) {
     await sendToAdmin(bot, chatId, msg.from, state.data, config);
     
     await bot.sendMessage(chatId, 
-      `✅ *Заявка на рекламу отправлена!*\n\n` +
-      `Администратор свяжется с вами в ближайшее время.`,
+      `🙏 *Спасибо!*\n\n` +
+      `Ваши данные отправлены. Админ их проверит и если будут вопросы — свяжется с вами.`,
       { parse_mode: 'Markdown', reply_markup: { keyboard: [['🏠 Главное меню']], resize_keyboard: true } }
     );
     
