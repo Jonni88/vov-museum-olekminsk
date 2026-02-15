@@ -76,10 +76,10 @@ async function showMethodChoice(bot, chatId, messageId, type, userStates) {
     reply_markup: {
       inline_keyboard: [
         [
-          { text: '✏️ Заполнить самому', callback_data: `add_method:${type}:self` }
+          { text: '✏️ Добавить информацию самому', callback_data: `add_method:${type}:self` }
         ],
         [
-          { text: '📤 Отправить админу', callback_data: `add_method:${type}:admin` }
+          { text: '📤 Прислать мне необходимые данные', callback_data: `add_method:${type}:admin` }
         ],
         [
           { text: '◀️ Назад', callback_data: 'add_back' }
