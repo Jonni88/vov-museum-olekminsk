@@ -1,6 +1,7 @@
 /**
  * Добавление контента на сайт
  * Два варианта: самостоятельно или через админа
+ * Для новости отдельный набор вопросов
  */
 
 const { v4: uuidv4 } = require('uuid');
@@ -10,6 +11,29 @@ const CONTENT_TYPES = {
   news: { icon: '📰', name: 'Новость', category: 'Новости' },
   service: { icon: '🛠', name: 'Услугу', category: 'Услуги' },
   ad: { icon: '📋', name: 'Объявление', category: 'Объявления' }
+};
+
+// Шаги для разных типов контента
+const STEPS = {
+  organization: ['name', 'description', 'contacts', 'address', 'schedule', 'social', 'photo'],
+  service: ['name', 'description', 'contacts', 'address', 'schedule', 'social', 'photo'],
+  ad: ['name', 'description', 'contacts', 'address', 'schedule', 'social', 'photo'],
+  news: ['name', 'photo', 'content', 'video', 'source', 'address', 'author']
+};
+
+// Названия шагов
+const STEP_NAMES = {
+  name: 'название',
+  description: 'описание',
+  contacts: 'контактные данные',
+  address: 'адрес',
+  schedule: 'график работы',
+  social: 'ссылки на соцсети',
+  photo: 'фото',
+  content: 'текст новости',
+  video: 'видео (ссылка)',
+  source: 'источник новости',
+  author: 'автор'
 };
 
 // Показать меню выбора типа контента
@@ -56,6 +80,16 @@ async function handleCallback(bot, query, userStates, config) {
       await sendSelfServiceLink(bot, chatId, query.message.message_id, type, config);
     } else {
       await startAdminSubmission(bot, chatId, query.message.message_id, type, userStates);
+    }
+    return;
+  }
+  
+  if (data.startsWith('add_confirm:')) {
+    const chatId = query.message.chat.id;
+    const state = userStates.get(chatId);
+    if (state) {
+      await sendToAdmin(bot, chatId, query.from, state, config);
+      userStates.delete(chatId);
     }
     return;
   }
@@ -126,28 +160,72 @@ async function sendSelfServiceLink(bot, chatId, messageId, type, config) {
 async function startAdminSubmission(bot, chatId, messageId, type, userStates) {
   const typeInfo = CONTENT_TYPES[type];
   const submissionId = uuidv4();
+  const steps = STEPS[type];
   
   userStates.set(chatId, {
     context: 'add_content',
     type: type,
     typeName: typeInfo.name,
-    step: 'name',
+    step: steps[0],
+    steps: steps,
+    stepIndex: 0,
     data: { submissionId, type },
     messageId: messageId
   });
   
-  const text = `${typeInfo.icon} *Отправка данных админу*
+  const totalQuestions = steps.length;
+  const isNews = type === 'news';
+  
+  let text = `${typeInfo.icon} *Отправка данных админу*
 
 Я задам несколько вопросов, а потом передам всё администратору.
 
-📝 *Вопрос 1 из 6*
-Введите *название* ${typeInfo.name.toLowerCase()}:`;
+📝 *Вопрос 1 из ${totalQuestions}*
+`;
+
+  if (isNews) {
+    text += `Введите *название новости*:`;
+  } else {
+    text += `Введите *название* ${typeInfo.name.toLowerCase()}:`;
+  }
 
   await bot.editMessageText(text, {
     chat_id: chatId,
     message_id: messageId,
     parse_mode: 'Markdown'
   });
+}
+
+// Получить следующий шаг
+function getNextStep(state) {
+  const currentIndex = state.steps.indexOf(state.step);
+  if (currentIndex < state.steps.length - 1) {
+    return state.steps[currentIndex + 1];
+  }
+  return null;
+}
+
+// Получить номер текущего вопроса
+function getQuestionNumber(state) {
+  return state.steps.indexOf(state.step) + 1;
+}
+
+// Получить текст вопроса
+function getQuestionText(step, type) {
+  const stepNames = {
+    name: type === 'news' ? 'название новости' : 'название',
+    description: 'описание',
+    contacts: 'контактные данные (телефон, email)',
+    address: 'адрес',
+    schedule: 'график работы',
+    social: 'ссылки на соцсети',
+    photo: 'фото',
+    content: 'текст новости',
+    video: 'ссылку на видео (или "нет")',
+    source: 'источник новости (или "нет")',
+    author: 'автора'
+  };
+  return stepNames[step] || step;
 }
 
 // Обработка сообщений при добавлении через админа
@@ -158,68 +236,67 @@ async function handleMessage(bot, msg, userStates, config) {
   
   if (!state || state.context !== 'add_content') return;
   
-  switch (state.step) {
-    case 'name':
-      if (text.length < 2) {
-        await bot.sendMessage(chatId, '⚠️ Название слишком короткое. Попробуйте ещё раз:');
-        return;
-      }
-      state.data.name = text;
-      state.step = 'description';
-      await bot.sendMessage(chatId, 
-        `✅ Название: *${text}*\n\n📝 *Вопрос 2*\nВведите *описание*:`, 
-        { parse_mode: 'Markdown' }
-      );
-      break;
-      
-    case 'description':
-      if (text.length < 10) {
-        await bot.sendMessage(chatId, '⚠️ Описание слишком короткое (минимум 10 символов):');
-        return;
-      }
-      state.data.description = text;
-      state.step = 'contacts';
-      await bot.sendMessage(chatId, 
-        `✅ Описание сохранено\n\n📞 *Вопрос 3*\nВведите *контактные данные* (телефон, email):`, 
-        { parse_mode: 'Markdown' }
-      );
-      break;
-      
-    case 'contacts':
-      state.data.contacts = text;
-      state.step = 'address';
-      await bot.sendMessage(chatId, 
-        `✅ Контакты: *${text}*\n\n📍 *Вопрос 4*\nВведите *адрес* (или "нет"):`, 
-        { parse_mode: 'Markdown' }
-      );
-      break;
-      
-    case 'address':
-      state.data.address = text.toLowerCase() === 'нет' ? null : text;
-      state.step = 'schedule';
-      await bot.sendMessage(chatId, 
-        `✅ Адрес: *${state.data.address || 'не указан'}*\n\n🕐 *Вопрос 5*\nВведите *график работы* (или "нет"):`, 
-        { parse_mode: 'Markdown' }
-      );
-      break;
-      
-    case 'schedule':
-      state.data.schedule = text.toLowerCase() === 'нет' ? null : text;
-      state.step = 'social';
-      await bot.sendMessage(chatId, 
-        `✅ График: *${state.data.schedule || 'не указан'}*\n\n🔗 *Вопрос 6*\nСсылки на *соцсети* (или "нет"):`, 
-        { parse_mode: 'Markdown' }
-      );
-      break;
-      
-    case 'social':
-      state.data.social = text.toLowerCase() === 'нет' ? null : text;
-      state.step = 'photo';
-      await bot.sendMessage(chatId, 
-        `✅ Соцсети: *${state.data.social || 'не указаны'}*\n\n📸 *Последний вопрос*\nОтправьте *фото* (логотип, фото организации) или напишите "нет":`
-      );
-      break;
+  const isNews = state.type === 'news';
+  const currentStep = state.step;
+  const totalQuestions = state.steps.length;
+  
+  // Валидация
+  if (currentStep === 'name' && text.length < 2) {
+    await bot.sendMessage(chatId, '⚠️ Название слишком короткое. Попробуйте ещё раз:');
+    return;
   }
+  
+  if (currentStep === 'description' && text.length < 10) {
+    await bot.sendMessage(chatId, '⚠️ Описание слишком короткое (минимум 10 символов):');
+    return;
+  }
+  
+  if (currentStep === 'content' && text.length < 10) {
+    await bot.sendMessage(chatId, '⚠️ Текст новости слишком короткий (минимум 10 символов):');
+    return;
+  }
+  
+  // Сохраняем данные
+  state.data[currentStep] = text;
+  
+  // Проверяем на "нет" для опциональных полей
+  if (['video', 'source', 'schedule', 'social'].includes(currentStep) && text.toLowerCase() === 'нет') {
+    state.data[currentStep] = null;
+  }
+  
+  // Получаем следующий шаг
+  const nextStep = getNextStep(state);
+  
+  if (!nextStep) {
+    // Это был последний вопрос
+    await showConfirmation(bot, chatId, state, userStates);
+    return;
+  }
+  
+  // Переходим к следующему вопросу
+  state.step = nextStep;
+  const questionNum = getQuestionNumber(state);
+  const questionText = getQuestionText(nextStep, state.type);
+  
+  let response = `✅ ${STEP_NAMES[currentStep] || currentStep}: `;
+  if (currentStep === 'photo') {
+    response += '✅ добавлено';
+  } else {
+    response += text.length > 30 ? text.substring(0, 30) + '...' : text;
+  }
+  response += `\n\n📝 *Вопрос ${questionNum} из ${totalQuestions}*\n`;
+  
+  if (nextStep === 'photo') {
+    response += `Отправьте *${questionText}* (или напишите "нет"):`;
+  } else if (nextStep === 'content') {
+    response += `Введите *${questionText}*:`;
+  } else if (nextStep === 'author') {
+    response += `Укажите *${questionText}*:`;
+  } else {
+    response += `Введите *${questionText}*:`;
+  }
+  
+  await bot.sendMessage(chatId, response, { parse_mode: 'Markdown' });
 }
 
 // Обработка фото
@@ -236,22 +313,53 @@ async function handlePhoto(bot, msg, userStates) {
     fileId: largestPhoto.file_id
   };
   
-  await showConfirmation(bot, chatId, state, userStates);
+  // Переходим к следующему шагу
+  const nextStep = getNextStep(state);
+  
+  if (!nextStep) {
+    await showConfirmation(bot, chatId, state, userStates);
+    return;
+  }
+  
+  state.step = nextStep;
+  const questionNum = getQuestionNumber(state);
+  const questionText = getQuestionText(nextStep, state.type);
+  const totalQuestions = state.steps.length;
+  
+  await bot.sendMessage(chatId, 
+    `✅ Фото добавлено\n\n📝 *Вопрос ${questionNum} из ${totalQuestions}*\nВведите *${questionText}*:`, 
+    { parse_mode: 'Markdown' }
+  );
 }
 
 // Показать подтверждение
 async function showConfirmation(bot, chatId, state, userStates) {
   const data = state.data;
   const typeInfo = CONTENT_TYPES[state.type];
+  const isNews = state.type === 'news';
   
   let summary = `📋 *Проверьте данные:*\n\n`;
   summary += `*Тип:* ${typeInfo.name}\n`;
   summary += `*Название:* ${data.name}\n`;
-  summary += `*Описание:* ${data.description.substring(0, 100)}${data.description.length > 100 ? '...' : ''}\n`;
-  summary += `*Контакты:* ${data.contacts}\n`;
-  if (data.address) summary += `*Адрес:* ${data.address}\n`;
-  if (data.schedule) summary += `*График:* ${data.schedule}\n`;
-  if (data.social) summary += `*Соцсети:* ${data.social}\n`;
+  
+  if (isNews) {
+    if (data.content) {
+      summary += `*Текст:* ${data.content.substring(0, 100)}${data.content.length > 100 ? '...' : ''}\n`;
+    }
+    if (data.video) summary += `*Видео:* ${data.video}\n`;
+    if (data.source) summary += `*Источник:* ${data.source}\n`;
+    if (data.address) summary += `*Адрес:* ${data.address}\n`;
+    if (data.author) summary += `*Автор:* ${data.author}\n`;
+  } else {
+    if (data.description) {
+      summary += `*Описание:* ${data.description.substring(0, 100)}${data.description.length > 100 ? '...' : ''}\n`;
+    }
+    summary += `*Контакты:* ${data.contacts}\n`;
+    if (data.address) summary += `*Адрес:* ${data.address}\n`;
+    if (data.schedule) summary += `*График:* ${data.schedule}\n`;
+    if (data.social) summary += `*Соцсети:* ${data.social}\n`;
+  }
+  
   if (data.photo) summary += `*Фото:* ✅ добавлено\n`;
   
   summary += `\nВсё верно?`;
@@ -294,16 +402,27 @@ async function sendToAdmin(bot, chatId, user, state, config) {
   
   const data = state.data;
   const typeInfo = CONTENT_TYPES[state.type];
+  const isNews = state.type === 'news';
   const userLink = user.username ? `@${user.username}` : `[${user.first_name}](tg://user?id=${chatId})`;
   
   let message = `📝 *Новая заявка на добавление!*\n\n`;
   message += `*Тип:* ${typeInfo.name}\n`;
   message += `*Название:* ${data.name}\n\n`;
-  message += `*Описание:*\n${data.description}\n\n`;
-  message += `*Контакты:* ${data.contacts}\n`;
-  if (data.address) message += `*Адрес:* ${data.address}\n`;
-  if (data.schedule) message += `*График:* ${data.schedule}\n`;
-  if (data.social) message += `*Соцсети:* ${data.social}\n`;
+  
+  if (isNews) {
+    message += `*Текст новости:*\n${data.content}\n\n`;
+    if (data.video) message += `*Видео:* ${data.video}\n`;
+    if (data.source) message += `*Источник:* ${data.source}\n`;
+    if (data.address) message += `*Адрес:* ${data.address}\n`;
+    if (data.author) message += `*Автор:* ${data.author}\n`;
+  } else {
+    message += `*Описание:*\n${data.description}\n\n`;
+    message += `*Контакты:* ${data.contacts}\n`;
+    if (data.address) message += `*Адрес:* ${data.address}\n`;
+    if (data.schedule) message += `*График:* ${data.schedule}\n`;
+    if (data.social) message += `*Соцсети:* ${data.social}\n`;
+  }
+  
   message += `\n*Отправил:* ${userLink}\n`;
   message += `*ID:* ${chatId}`;
   
