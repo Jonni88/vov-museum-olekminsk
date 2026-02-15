@@ -7,6 +7,7 @@ const partnership = require('./handlers/partnership');
 const claimAccess = require('./handlers/claimAccess');
 const hashtag = require('./handlers/hashtag');
 const feedback = require('./handlers/feedback');
+const updateData = require('./handlers/updateData');
 const adminPanel = require('./handlers/adminPanel');
 
 // Проверка конфигурации
@@ -66,6 +67,10 @@ bot.onText(/#️⃣ Добавить хэштег/, (msg) => {
 
 bot.onText(/💬 Обратная связь/, (msg) => {
   feedback.start(bot, msg.chat.id, userStates);
+});
+
+bot.onText(/🔄 Актуализировать данные/, (msg) => {
+  updateData.start(bot, msg.chat.id, userStates);
 });
 
 bot.onText(/❓ Помощь/, (msg) => {
@@ -151,6 +156,10 @@ bot.on('message', async (msg) => {
       
     case 'feedback':
       await feedback.handleMessage(bot, msg, userStates, config);
+      break;
+      
+    case 'update_data':
+      await updateData.handleMessage(bot, msg, userStates, config);
       break;
   }
 });
