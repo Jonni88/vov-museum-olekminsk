@@ -5,6 +5,8 @@ const addContent = require('./handlers/addContent');
 const advertising = require('./handlers/advertising');
 const partnership = require('./handlers/partnership');
 const claimAccess = require('./handlers/claimAccess');
+const hashtag = require('./handlers/hashtag');
+const feedback = require('./handlers/feedback');
 const adminPanel = require('./handlers/adminPanel');
 
 // Проверка конфигурации
@@ -58,6 +60,14 @@ bot.onText(/🔐 Моя организация/, (msg) => {
   claimAccess.start(bot, msg.chat.id, userStates);
 });
 
+bot.onText(/#️⃣ Добавить хэштег/, (msg) => {
+  hashtag.start(bot, msg.chat.id, userStates);
+});
+
+bot.onText(/💬 Обратная связь/, (msg) => {
+  feedback.start(bot, msg.chat.id, userStates);
+});
+
 bot.onText(/❓ Помощь/, (msg) => {
   mainMenu.showHelp(bot, msg.chat.id);
 });
@@ -90,6 +100,11 @@ bot.on('callback_query', async (query) => {
   // Получить доступ
   if (data.startsWith('claim_')) {
     await claimAccess.handleCallback(bot, query, userStates);
+  }
+  
+  // Обратная связь
+  if (data.startsWith('feedback_')) {
+    await feedback.handleCallback(bot, query, userStates);
   }
   
   // Админ панель
@@ -128,6 +143,14 @@ bot.on('message', async (msg) => {
       
     case 'claim_access':
       await claimAccess.handleMessage(bot, msg, userStates, config);
+      break;
+      
+    case 'hashtag':
+      await hashtag.handleMessage(bot, msg, userStates, config);
+      break;
+      
+    case 'feedback':
+      await feedback.handleMessage(bot, msg, userStates, config);
       break;
   }
 });
