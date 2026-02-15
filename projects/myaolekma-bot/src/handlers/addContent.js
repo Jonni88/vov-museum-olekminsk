@@ -16,8 +16,8 @@ const CONTENT_TYPES = {
 // Шаги для разных типов контента
 const STEPS = {
   organization: ['name', 'description', 'contacts', 'address', 'schedule', 'social', 'photo'],
-  service: ['name', 'description', 'contacts', 'address', 'schedule', 'social', 'photo'],
-  ad: ['name', 'description', 'contacts', 'address', 'schedule', 'social', 'photo'],
+  service: ['name', 'description', 'price', 'contacts', 'address', 'schedule', 'social', 'photo'],
+  ad: ['name', 'description', 'price', 'contacts', 'address', 'schedule', 'social', 'photo'],
   news: ['name', 'photo', 'content', 'video', 'source', 'address', 'author']
 };
 
@@ -25,6 +25,7 @@ const STEPS = {
 const STEP_NAMES = {
   name: 'название',
   description: 'описание',
+  price: 'стоимость',
   contacts: 'контактные данные',
   address: 'адрес',
   schedule: 'график работы',
@@ -215,6 +216,7 @@ function getQuestionText(step, type) {
   const stepNames = {
     name: type === 'news' ? 'название новости' : 'название',
     description: 'описание',
+    price: 'стоимость (например: "1000 руб", "договорная", "торг")',
     contacts: 'контактные данные (телефон, email)',
     address: 'адрес',
     schedule: 'график работы',
@@ -354,6 +356,7 @@ async function showConfirmation(bot, chatId, state, userStates) {
     if (data.description) {
       summary += `*Описание:* ${data.description.substring(0, 100)}${data.description.length > 100 ? '...' : ''}\n`;
     }
+    if (data.price) summary += `*Стоимость:* ${data.price}\n`;
     summary += `*Контакты:* ${data.contacts}\n`;
     if (data.address) summary += `*Адрес:* ${data.address}\n`;
     if (data.schedule) summary += `*График:* ${data.schedule}\n`;
@@ -417,6 +420,7 @@ async function sendToAdmin(bot, chatId, user, state, config) {
     if (data.author) message += `*Автор:* ${data.author}\n`;
   } else {
     message += `*Описание:*\n${data.description}\n\n`;
+    if (data.price) message += `*Стоимость:* ${data.price}\n`;
     message += `*Контакты:* ${data.contacts}\n`;
     if (data.address) message += `*Адрес:* ${data.address}\n`;
     if (data.schedule) message += `*График:* ${data.schedule}\n`;
