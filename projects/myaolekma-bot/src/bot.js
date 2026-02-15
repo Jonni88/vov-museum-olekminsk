@@ -10,7 +10,6 @@ const feedback = require('./handlers/feedback');
 const updateData = require('./handlers/updateData');
 const report = require('./handlers/report');
 const search = require('./handlers/search');
-const share = require('./handlers/share');
 const faq = require('./handlers/faq');
 const adminPanel = require('./handlers/adminPanel');
 
@@ -83,10 +82,6 @@ bot.onText(/🚨 Сообщить о проблеме/, (msg) => {
 
 bot.onText(/🔍 Поиск/, (msg) => {
   search.start(bot, msg.chat.id, userStates);
-});
-
-bot.onText(/📤 Поделиться/, (msg) => {
-  share.start(bot, msg.chat.id, userStates);
 });
 
 bot.onText(/❓ FAQ/, (msg) => {
@@ -199,10 +194,6 @@ bot.on('message', async (msg) => {
 
     case 'search':
       await search.handleMessage(bot, msg, userStates, config);
-      break;
-
-    case 'share':
-      await share.handleMessage(bot, msg, userStates, config);
       break;
   }
 });
