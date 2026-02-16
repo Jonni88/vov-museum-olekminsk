@@ -1,0 +1,37 @@
+{
+  "museum_name": "Память Олёкминского края",
+  "description": "Виртуальный музей участников Великой Отечественной войны из Олёкминского района",
+  "created": "2026-02-16",
+  "statistics": {
+    "total_veterans": 0,
+    "heroes_of_ussr": 0,
+    "full_cavaliers": 0,
+    "fallen": 0
+  },
+  "sections": [
+    {
+      "id": "heroes",
+      "title": "Герои района",
+      "description": "Биографии известных ветеранов"
+    },
+    {
+      "id": "memory_book",
+      "title": "Книга памяти",
+      "description": "Погибшие и пропавшие без вести"
+    },
+    {
+      "id": "gallery",
+      "title": "Фотоархив",
+      "description": "Исторические фотографии"
+    },
+    {
+      "id": "documents",
+      "title": "Архивные документы",
+      "description": "Наградные листы, письма"
+    }
+  ],
+  "contacts": {
+    "email": "museum@olekminsk.ru",
+    "phone": "+7 (XXX) XXX-XX-XX"
+  }
+}

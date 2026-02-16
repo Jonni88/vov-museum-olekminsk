@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Память Олёкминского края | Виртуальный музей</title>
+    <link rel="stylesheet" href="src/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Герой-секция -->
+    <header class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="eternal-flame">🔥</div>
+            <h1>Память Олёкминского края</h1>
+            <p class="subtitle">Виртуальный музей участников Великой Отечественной войны</p>
+            <p class="years">1941 — 1945</p>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="veterans-count">0</span>
+                    <span class="stat-label">ветеранов в базе</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="heroes-count">0</span>
+                    <span class="stat-label">героев района</span>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">↓</div>
+    </header>
+
+    <!-- Навигация -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="#home" class="nav-logo">ПАМЯТЬ</a>
+            <ul class="nav-menu">
+                <li><a href="#home">Главная</a></li>
+                <li><a href="#heroes">Герои</a></li>
+                <li><a href="#search">Поиск</a></li>
+                <li><a href="#gallery">Галерея</a></li>
+                <li><a href="#documents">Документы</a></li>
+                <li><a href="#add-info">Добавить</a></li>
+            </ul>
+            <button class="nav-toggle">☰</button>
+        </div>
+    </nav>
+
+    <!-- Обращение -->
+    <section class="appeal" id="home">
+        <div class="container">
+            <h2>Обращение к посетителям</h2>
+            <div class="appeal-content">
+                <p>
+                    Этот сайт создан в память о наших земляках — жителях Олёкминского района, 
+                    которые прошли через все тяготы Великой Отечественной войны. Они защищали 
+                    нашу Родину на фронтах, трудились в тылу, восстанавливали разрушенное хозяйство.
+                </p>
+                <p>
+                    Мы должны помнить каждого, кто отдал свою жизнь за свободу и независимость 
+                    нашей страны. Имена героев должны жить в веках.
+                </p>
+                <p class="appeal-author">— Создатели музея</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Герои района -->
+    <section class="heroes" id="heroes">
+        <div class="container">
+            <h2>🎖️ Герои Олёкминского района</h2>
+            <p class="section-desc">Биографии известных ветеранов, их подвиги и награды</p>
+            
+            <div class="heroes-grid" id="heroes-grid">
+                <!-- Карточки ветеранов будут загружаться из JSON -->
+            </div>
+            
+            <button class="btn btn-outline" id="load-more">Показать больше</button>
+        </div>
+    </section>
+
+    <!-- Поиск -->
+    <section class="search-section" id="search">
+        <div class="container">
+            <h2>🔍 Найти ветерана</h2>
+            <p class="section-desc">Поиск по фамилии, имени или отчеству</p>
+            
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Введите фамилию...">
+                <button class="btn btn-primary" id="search-btn">Найти</button>
+            </div>
+            
+            <div class="search-results" id="search-results">
+                <!-- Результаты поиска -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Книга памяти -->
+    <section class="memory-book">
+        <div class="container">
+            <h2>📖 Книга памяти</h2>
+            <p class="section-desc">Погибшие и пропавшие без вести</p>
+            
+            <div class="memory-intro">
+                <p>
+                    Вечная память землякам, которые не вернулись с войны. 
+                    Их имена навсегда вписаны в историю нашего района.
+                </p>
+            </div>
+            
+            <div class="memory-list" id="memory-list">
+                <!-- Список погибших -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Галерея -->
+    <section class="gallery" id="gallery">
+        <div class="container">
+            <h2>📸 Фотоархив</h2>
+            <p class="section-desc">Исторические фотографии времен войны и мирной жизни</p>
+            
+            <div class="gallery-grid" id="gallery-grid">
+                <!-- Фотографии -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Документы -->
+    <section class="documents" id="documents">
+        <div class="container">
+            <h2>📜 Архивные документы</h2>
+            <p class="section-desc">Наградные листы, письма с фронта, воспоминания</p>
+            
+            <div class="documents-list" id="documents-list">
+                <!-- Документы -->
+            </div>
+        </div>
+    </section>
+
+    <!-- История района -->
+    <section class="history">
+        <div class="container">
+            <h2>🏭 Олёкминский район в годы войны</h2>
+            
+            <div class="history-content">
+                <div class="history-text">
+                    <h3>Трудовой подвиг тыла</h3>
+                    <p>
+                        В годы Великой Отечественной войны жители Олёкминского района 
+                        активно включились в работу по обеспечению фронта. Колхозы и совхозы 
+                        района поставляли продовольствие для армии, работали сверхурочно.
+                    </p>
+                    <p>
+                        Многие женщины, старики и подростки заменили ушедших на фронт мужчин 
+                        в полевых работах, на лесозаготовках, в промышленности.
+                    </p>
+                </div>
+                
+                <div class="history-facts">
+                    <h3>Факты и цифры</h3>
+                    <ul>
+                        <li>Более <strong>5000</strong> жителей района ушли на фронт</li>
+                        <li>Более <strong>2000</strong> не вернулись</li>
+                        <li>20 <strong>Героев Советского Союза</strong></li>
+                        <li>Свыше <strong>100</strong> полных кавалеров ордена Славы</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Добавить информацию -->
+    <section class="add-info" id="add-info">
+        <div class="container">
+            <h2>➕ Добавить информацию</h2>
+            <p class="section-desc">
+                Если у вас есть данные о ветеранах, фотографии или документы — 
+                помогите нам сохранить память о подвиге
+            </p>
+            
+            <div class="add-info-form">
+                <form id="veteran-form">
+                    <div class="form-group">
+                        <label>ФИО ветерана *</label>
+                        <input type="text" name="fullname" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Год рождения</label>
+                            <input type="number" name="birth_year" min="1900" max="2000">
+                        </div>
+                        <div class="form-group">
+                            <label>Год смерти</label>
+                            <input type="number" name="death_year" min="1941" max="2024">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Населённый пункт</label>
+                        <input type="text" name="settlement" placeholder="село, посёлок">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Биография, подвиги</label>
+                        <textarea name="biography" rows="5"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Награды</label>
+                        <input type="text" name="awards" placeholder="Орден Красной Звезды, медаль «За отвагу»...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Фотографии</label>
+                        <input type="file" name="photos" accept="image/*" multiple>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ваши контакты *</label>
+                        <input type="text" name="contacts" placeholder="Телефон или email" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Отправить информацию</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Память Олёкминского края</h3>
+                    <p>Виртуальный музей участников ВОВ</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Контакты</h3>
+                    <p>Email: museum@olekminsk.ru</p>
+                    <p>Тел.: +7 (XXX) XXX-XX-XX</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Партнёры</h3>
+                    <p>Администрация Олёкминского района</p>
+                    <p>Местное отделение ВОВ</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2026 Виртуальный музей «Память Олёкминского края»</p>
+                <p>Сайт создан в память о подвиге защитников Отечества</p>
+                <p class="eternal-memory">Вечная память героям! 🔥</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Модальное окно для карточки ветерана -->
+    <div class="modal" id="veteran-modal">
+        <div class="modal-content">
+            <span class="modal-close">×</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script src="src/app.js"></script>
+</body>
+</html>
