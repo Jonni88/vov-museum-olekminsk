@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бессмертный полк Олёкминского района</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        /* Шапка */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            z-index: 1000;
+            text-align: center;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .back-link {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        /* Контейнер полка */
+        .regiment-container {
+            margin-top: 120px;
+            padding: 20px;
+            perspective: 1000px;
+        }
+
+        /* Ряды фото */
+        .march-row {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            animation: march 20s linear infinite;
+            will-change: transform;
+        }
+
+        /* Два ряда движутся в разные стороны для эффекта */
+        .march-row:nth-child(even) {
+            animation: march-reverse 25s linear infinite;
+        }
+
+        /* Разная скорость для глубины */
+        .march-row:nth-child(3n) {
+            animation-duration: 18s;
+        }
+
+        .march-row:nth-child(3n+1) {
+            animation-duration: 22s;
+        }
+
+        @keyframes march {
+            0% {
+                transform: translateX(100vw);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        @keyframes march-reverse {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100vw);
+            }
+        }
+
+        /* Карточка ветерана */
+        .veteran-card {
+            flex-shrink: 0;
+            width: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            border: 2px solid rgba(212,175,55,0.3);
+        }
+
+        .veteran-card:hover {
+            transform: scale(1.1) translateZ(50px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            border-color: #d4af37;
+            z-index: 100;
+        }
+
+        .veteran-photo {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .veteran-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: sepia(30%) contrast(1.1);
+        }
+
+        .veteran-photo::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.7));
+        }
+
+        .veteran-info {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .veteran-name {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: #d4af37;
+        }
+
+        .veteran-years {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        /* Эффект свечения для некоторых карточек */
+        .veteran-card.featured {
+            border-color: #d4af37;
+            box-shadow: 0 0 30px rgba(212,175,55,0.3);
+        }
+
+        /* Управление */
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn {
+            background: rgba(212,175,55,0.2);
+            border: 2px solid #d4af37;
+            color: #d4af37;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #d4af37;
+            color: #1a1a2e;
+        }
+
+        /* Загрузка фото */
+        .upload-section {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #d4af37;
+            max-width: 300px;
+            z-index: 999;
+        }
+
+        .upload-section h3 {
+            color: #d4af37;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .upload-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: rgba(212,175,55,0.2);
+            border: 2px dashed #d4af37;
+            color: #d4af37;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background: rgba(212,175,55,0.4);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.3rem;
+            }
+
+            .veteran-card {
+                width: 150px;
+            }
+
+            .veteran-photo {
+                height: 180px;
+            }
+
+            .controls {
+                flex-wrap: wrap;
+                justify-content: center;
+                bottom: 10px;
+                padding: 10px 15px;
+            }
+
+            .control-btn {
+                padding: 8px 15px;
+                font-size: 0.8rem;
+            }
+
+            .upload-section {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin: 20px;
+                max-width: none;
+            }
+        }
+
+        /* Эффект частиц (боке) */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(212,175,55,0.5);
+            border-radius: 50%;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Текст посреди экрана */
+        .motto {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .motto h2 {
+            font-size: 5rem;
+            color: #d4af37;
+            text-transform: uppercase;
+            letter-spacing: 20px;
+            text-shadow: 0 0 50px rgba(212,175,55,0.5);
+        }
+
+        @media (max-width: 768px) {
+            .motto h2 {
+                font-size: 2rem;
+                letter-spacing: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Частицы на фоне -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Надпись посреди -->
+    <div class="motto">
+        <h2>Помним</h2>
+    </div>
+
+    <!-- Шапка -->
+    <header class="header">
+        <a href="index.html" class="back-link">← Назад в музей</a>
+        <h1>Бессмертный полк Олёкминского района</h1>
+        <p>Никто не забыт, ничто не забыто</p>
+    </header>
+
+    <!-- Контейнер с рядами -->
+    <div class="regiment-container" id="regiment">
+        <!-- Ряды будут генерироваться JS -->
+    </div>
+
+    <!-- Управление -->
+    <div class="controls">
+        <button class="control-btn" onclick="changeSpeed('slow')">Медленно</button>
+        <button class="control-btn" onclick="changeSpeed('normal')">Нормально</button>
+        <button class="control-btn" onclick="changeSpeed('fast')">Быстро</button>
+        <button class="control-btn" onclick="togglePause()">Пауза</button>
+    </div>
+
+    <!-- Загрузка фото (опционально) -->
+    <div class="upload-section">
+        <h3>Добавить фото ветерана</h3>
+        <label class="upload-btn">
+            <input type="file" accept="image/*" style="display: none;" onchange="handleUpload(event)">
+            📷 Загрузить фото
+        </label>
+    </div>
+
+    <script>
+        // Пример данных ветеранов
+        const veterans = [
+            { name: "Иванов И.И.", years: "1920-1995", photo: null },
+            { name: "Петров П.П.", years: "1915-1943", photo: null },
+            { name: "Сидоров А.В.", years: "1922-1988", photo: null },
+            { name: "Кузнецов М.С.", years: "1918-1944", photo: null },
+            { name: "Смирнов В.П.", years: "1921-1990", photo: null },
+            { name: "Васильев А.А.", years: "1919-1942", photo: null },
+            { name: "Попов С.Д.", years: "1923-1997", photo: null },
+            { name: "Новиков Г.И.", years: "1917-1943", photo: null },
+            { name: "Федоров В.М.", years: "1920-1985", photo: null },
+            { name: "Морозов П.А.", years: "1924-1992", photo: null }
+        ];
+
+        // Создание рядов
+        function createRows() {
+            const container = document.getElementById('regiment');
+            const numberOfRows = 5;
+
+            for (let i = 0; i < numberOfRows; i++) {
+                const row = document.createElement('div');
+                row.className = 'march-row';
+                
+                // Дублируем ветеранов для бесконечной прокрутки
+                const duplicatedVeterans = [...veterans, ...veterans, ...veterans];
+                
+                row.innerHTML = duplicatedVeterans.map((v, index) => `
+                    <div class="veteran-card ${index % 5 === 0 ? 'featured' : ''}">
+                        <div class="veteran-photo">
+                            ${v.photo ? `<img src="${v.photo}" alt="${v.name}">` : '🎖️'}
+                        </div>
+                        <div class="veteran-info">
+                            <div class="veteran-name">${v.name}</div>
+                            <div class="veteran-years">${v.years}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.appendChild(row);
+            }
+        }
+
+        // Создание частиц
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Управление скоростью
+        let isPaused = false;
+        
+        function changeSpeed(speed) {
+            const rows = document.querySelectorAll('.march-row');
+            const speeds = {
+                slow: '40s',
+                normal: '20s',
+                fast: '10s'
+            };
+            
+            rows.forEach(row => {
+                row.style.animationDuration = speeds[speed];
+            });
+        }
+
+        function togglePause() {
+            const rows = document.querySelectorAll('.march-row');
+            isPaused = !isPaused;
+            
+            rows.forEach(row => {
+                row.style.animationPlayState = isPaused ? 'paused' : 'running';
+            });
+        }
+
+        // Загрузка фото
+        function handleUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    veterans.push({
+                        name: "Новый ветеран",
+                        years: "1920-1945",
+                        photo: e.target.result
+                    });
+                    // Пересоздаём ряды
+                    document.getElementById('regiment').innerHTML = '';
+                    createRows();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Клик по карточке
+        document.addEventListener('click', function(e) {
+            const card = e.target.closest('.veteran-card');
+            if (card) {
+                // Можно добавить модальное окно с подробностями
+                card.style.animation = 'pulse 0.5s ease';
+                setTimeout(() => {
+                    card.style.animation = '';
+                }, 500);
+            }
+        });
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            createRows();
+            createParticles();
+        });
+    </script>
+</body>
+</html>
